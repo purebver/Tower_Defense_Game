@@ -12,12 +12,16 @@ const ctx = canvas.getContext('2d');
 
 const NUM_OF_MONSTERS = 5; // 몬스터 개수
 
-let userGold = 0; // 유저 골드
+let userGold = 1000000; // 유저 골드
 let base; // 기지 객체
 let baseHp = 0; // 기지 체력
 
+let towerData = [];
+let monsterData = [];
+let stageData = [];
+
 let towerCost = 0; // 타워 구입 비용
-let numOfInitialTowers = 3; // 초기 타워 개수
+let numOfInitialTowers = 0; // 초기 타워 개수
 let monsterLevel = 0; // 몬스터 레벨
 let monsterSpawnInterval = 1000; // 몬스터 생성 주기
 const monsters = [];
@@ -144,21 +148,51 @@ function placeInitialTowers() {
     타워를 초기에 배치하는 함수입니다.
     무언가 빠진 코드가 있는 것 같지 않나요? 
   */
+  console.log('towerData 연결?', towerData);
+  const randomTowerId = Math.floor(Math.random() * 5) + 1;
+  const towerInfo = towerData.find((a) => a.towerId === 1);
+  console.log('towerInfo 연결', towerInfo);
+
   for (let i = 0; i < numOfInitialTowers; i++) {
-    const { x, y } = getRandomPositionNearPath(200);
-    const tower = new Tower(x, y, towerCost);
+    const { x, y } = getRandomPositionNearPath(0);
+    const tower = new Tower(
+      x,
+      y,
+      towerInfo.towerCost,
+      towerInfo.towerAttack,
+      towerInfo.towerRange,
+      towerInfo.towerSpeed,
+    );
     towers.push(tower);
     tower.draw(ctx, towerImage);
+    serverSocket.emit('event', {
+      handlerId: 30,
+      towers,
+    });
   }
 }
 
 function placeNewTower() {
-  /* 
-    타워를 구입할 수 있는 자원이 있을 때 타워 구입 후 랜덤 배치하면 됩니다.
-    빠진 코드들을 채워넣어주세요! 
-  */
-  const { x, y } = getRandomPositionNearPath(200);
-  const tower = new Tower(x, y);
+  const randomTowerId = Math.floor(Math.random() * 5) + 1;
+  const towerInfo = towerData.find((a) => a.towerId === randomTowerId);
+
+  if (userGold < towerInfo.towerCost) {
+    alert('message: 타워 구입에 필요한 금액이 부족합니다.');
+    return;
+  }
+
+  userGold -= towerInfo.towerCost;
+
+  const { x, y } = getRandomPositionNearPath(0);
+
+  const tower = new Tower(
+    x,
+    y,
+    towerInfo.towerCost,
+    towerInfo.towerAttack,
+    towerInfo.towerRange,
+    towerInfo.towerSpeed,
+  );
   towers.push(tower);
   tower.draw(ctx, towerImage);
 }
@@ -199,6 +233,10 @@ function gameLoop() {
       if (distance < tower.range) {
         tower.attack(monster);
       }
+      serverSocket.emit('event', {
+        handlerId: 30,
+        towers,
+      });
     });
   });
 
@@ -248,14 +286,23 @@ Promise.all([
   ...monsterImages.map((img) => new Promise((resolve) => (img.onload = resolve))),
 ]).then(() => {
   /* 서버 접속 코드 (여기도 완성해주세요!) */
-  let somewhere;
+  // let somewhere = localStorage.getItem();
   serverSocket = io('http://localhost:3000', {
     // auth: {
     //   token: somewhere, // 토큰이 저장된 어딘가에서 가져와야 합니다!
     // },
   });
-  serverSocket.on('connection', (data) => {
-    console.log('connection');
+  serverSocket.on('datainfo', async ({ towers, monsters, stages }) => {
+    towerData.push(...towers);
+    monsterData.push(...monsters);
+    stageData.push(...stages);
+    console.log('datainfo get');
+    if (!isInitGame) {
+      initGame();
+    }
+  });
+  serverSocket.on('response', (data) => {
+    console.log(data);
   });
   /* 
     서버의 이벤트들을 받는 코드들은 여기다가 쭉 작성해주시면 됩니다! 
@@ -263,9 +310,6 @@ Promise.all([
     이 때, 상태 동기화 이벤트의 경우에 아래의 코드를 마지막에 넣어주세요! 최초의 상태 동기화 이후에 게임을 초기화해야 하기 때문입니다! 
     
   */
-  if (!isInitGame) {
-    initGame();
-  }
 });
 
 const buyTowerButton = document.createElement('button');
