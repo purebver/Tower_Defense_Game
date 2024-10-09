@@ -6,5 +6,7 @@ export const handlerEvent = async (socket, data) => {
     socket.emit('response', { status: 'fail', message: 'handler not found' });
   }
 
-  // const response = handler(data.);
+  const response = handler(data);
+
+  socket.emit('response', response);
 };
