@@ -301,6 +301,9 @@ Promise.all([
       initGame();
     }
   });
+  serverSocket.on('connection', (data) => {
+    console.log(data);
+  });
   serverSocket.on('response', (data) => {
     console.log(data);
   });

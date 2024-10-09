@@ -1,11 +1,12 @@
 import { getData } from '../init/data.js';
-import { handlerEvent } from './handler.event.js';
+import { handleConnection, handlerEvent } from './handler.event.js';
 
 const registerHandler = (io) => {
   io.on('connection', async (socket) => {
     //connection 이벤트 처리
     //클라이언트가 보낸 token
     const token = socket.handshake.auth.token;
+
     console.log('token: ', token);
 
     console.log('user connection');
@@ -20,7 +21,8 @@ const registerHandler = (io) => {
     });
 
     //접속 후
-    socket.on('event', (data) => handlerEvent(socket, data));
+    handleConnection(token);
+    socket.on('event', (data) => handlerEvent(socket, token, data));
 
     //접속 해제 시 이벤트
     socket.on('disconnect', () => {
