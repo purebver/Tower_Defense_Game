@@ -18,6 +18,7 @@ let baseHp = 0; // 기지 체력
 
 let towerData = [];
 let monsterData = [];
+let stageData = [];
 
 let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 0; // 초기 타워 개수
@@ -148,11 +149,12 @@ function placeInitialTowers() {
     무언가 빠진 코드가 있는 것 같지 않나요? 
   */
   console.log('towerData 연결?', towerData);
+  const randomTowerId = Math.floor(Math.random() * 5) + 1;
   const towerInfo = towerData.find((a) => a.towerId === 1);
   console.log('towerInfo 연결', towerInfo);
 
   for (let i = 0; i < numOfInitialTowers; i++) {
-    const { x, y } = getRandomPositionNearPath(200);
+    const { x, y } = getRandomPositionNearPath(0);
     const tower = new Tower(
       x,
       y,
@@ -163,13 +165,17 @@ function placeInitialTowers() {
     );
     towers.push(tower);
     tower.draw(ctx, towerImage);
+    serverSocket.emit('event', {
+      handlerId: 30,
+      towers,
+    });
   }
 }
 
 function placeNewTower() {
   const randomTowerId = Math.floor(Math.random() * 5) + 1;
   const towerInfo = towerData.find((a) => a.towerId === randomTowerId);
-  console.log('towerInfo', randomTowerId);
+
   if (userGold < towerInfo.towerCost) {
     alert('message: 타워 구입에 필요한 금액이 부족합니다.');
     return;
@@ -177,7 +183,7 @@ function placeNewTower() {
 
   userGold -= towerInfo.towerCost;
 
-  const { x, y } = getRandomPositionNearPath(200);
+  const { x, y } = getRandomPositionNearPath(0);
 
   const tower = new Tower(
     x,
@@ -189,9 +195,6 @@ function placeNewTower() {
   );
   towers.push(tower);
   tower.draw(ctx, towerImage);
-  // serverSocket.emit('event', {
-  //   handlerId: 30
-  // });
 }
 
 function placeBase() {
@@ -230,6 +233,10 @@ function gameLoop() {
       if (distance < tower.range) {
         tower.attack(monster);
       }
+      serverSocket.emit('event', {
+        handlerId: 30,
+        towers,
+      });
     });
   });
 
@@ -279,19 +286,23 @@ Promise.all([
   ...monsterImages.map((img) => new Promise((resolve) => (img.onload = resolve))),
 ]).then(() => {
   /* 서버 접속 코드 (여기도 완성해주세요!) */
-  let somewhere = 99;
+  // let somewhere = localStorage.getItem();
   serverSocket = io('http://localhost:3000', {
-    auth: {
-      token: somewhere, // 토큰이 저장된 어딘가에서 가져와야 합니다!
-    },
+    // auth: {
+    //   token: somewhere, // 토큰이 저장된 어딘가에서 가져와야 합니다!
+    // },
   });
-  serverSocket.on('datainfo', async ({ towers, monsters }) => {
+  serverSocket.on('datainfo', async ({ towers, monsters, stages }) => {
     towerData.push(...towers);
     monsterData.push(...monsters);
+    stageData.push(...stages);
     console.log('datainfo get');
     if (!isInitGame) {
       initGame();
     }
+  });
+  serverSocket.on('response', (data) => {
+    console.log(data);
   });
   /* 
     서버의 이벤트들을 받는 코드들은 여기다가 쭉 작성해주시면 됩니다! 
