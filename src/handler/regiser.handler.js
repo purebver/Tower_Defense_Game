@@ -10,8 +10,8 @@ const registerHandler = (io) => {
     console.log('user connection');
 
     //프리즈마로 tower데이터 받아오기
-    const towers = await prisma.Tower.findMany();
-    const monsters = await prisma.Monster.findMany();
+    const towers = await prisma.tower.findMany();
+    const monsters = await prisma.monster.findMany();
     //받은 데이터 emit으로 클라이언트에게 보내주기
     socket.emit('datainfo', {
       towers,
