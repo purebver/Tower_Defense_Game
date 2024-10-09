@@ -9,10 +9,11 @@ datasource db {
 
 // 유저 정보
 model User {
-  id                Int       @id                 // 유저ID
-  pw                String                        // 유저PW
-  highScore         Int       @default(0)         // 유저의 최고점수
-  createdAt         DateTime  @default(now())     // 계정이 생성된 시간
+  id                Int       @id @default(autoincrement()) // 유저 테이블 고유ID
+  userId            String    @unique                       // 유저ID
+  pw                String                                  // 유저PW
+  highScore         Int       @default(0)                   // 유저의 최고점수
+  createdAt         DateTime  @default(now())               // 계정이 생성된 시간
 
   // 1:N 관계 - 한 명의 유저는 여러 게임 점수를 가질 수 있다.
   gameScore         GameScore[]
@@ -24,9 +25,9 @@ model GameScore {
   userId            Int                           // 외래키(User와 연결)
   level             Int       @default(1)         // 게임 종류 후 최종 레벨
   score             Int       @default(0)         // 게임 종료 후 최종 점수
-  endTime           DateTime
+  endTime           DateTime  @default(now())     // 게임 종료 시간
 
-  user              User      @relation(fields: [userId], references: [id])
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // 스테이지 정보
