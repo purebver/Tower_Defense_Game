@@ -12,7 +12,7 @@ const ctx = canvas.getContext('2d');
 
 const NUM_OF_MONSTERS = 5; // 몬스터 개수
 
-let userGold = 10000; // 유저 골드
+let userGold = 1000000; // 유저 골드
 let base; // 기지 객체
 let baseHp = 0; // 기지 체력
 
@@ -20,7 +20,7 @@ let towerData = [];
 let monsterData = [];
 
 let towerCost = 0; // 타워 구입 비용
-let numOfInitialTowers = 3; // 초기 타워 개수
+let numOfInitialTowers = 0; // 초기 타워 개수
 let monsterLevel = 0; // 몬스터 레벨
 let monsterSpawnInterval = 1000; // 몬스터 생성 주기
 const monsters = [];
@@ -148,7 +148,7 @@ function placeInitialTowers() {
     무언가 빠진 코드가 있는 것 같지 않나요? 
   */
   console.log('towerData 연결?', towerData);
-  const towerInfo = towerData.find((a) => a.towerId === 2);
+  const towerInfo = towerData.find((a) => a.towerId === 1);
   console.log('towerInfo 연결', towerInfo);
 
   for (let i = 0; i < numOfInitialTowers; i++) {
@@ -167,12 +167,14 @@ function placeInitialTowers() {
 }
 
 function placeNewTower() {
-  const towerInfo = towerData.find((a) => a.towerId === 2);
-
+  const randomTowerId = Math.floor(Math.random() * 5) + 1;
+  const towerInfo = towerData.find((a) => a.towerId === randomTowerId);
+  console.log('towerInfo', randomTowerId);
   if (userGold < towerInfo.towerCost) {
     alert('message: 타워 구입에 필요한 금액이 부족합니다.');
     return;
   }
+
   userGold -= towerInfo.towerCost;
 
   const { x, y } = getRandomPositionNearPath(200);
