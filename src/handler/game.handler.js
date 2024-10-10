@@ -1,8 +1,12 @@
 import { prisma } from '../utils/prisma/prisma.client.js';
 
-export const gameEndHandler = async (accountId, payload) => {
-  console.log('accountId: ', accountId);
-  console.log('payload: ', payload);
+export const gameStartHandler = () => {
+  console.log('이것은 게임 시작 핸들러입니다.');
+
+  return { status: 'success', message: '게임 시작' };
+};
+
+export const gameEndHandler = async (uuid, payload) => {
   try {
     // todo: 임의로 지정한 score, 추후 monster 처치로 인한 score가 구현 되면 추가
     let score = 100;
