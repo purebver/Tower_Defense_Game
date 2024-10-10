@@ -162,6 +162,7 @@ function placeInitialTowers() {
       towerInfo.towerAttack,
       towerInfo.towerRange,
       towerInfo.towerSpeed,
+      towerInfo.towerId,
     );
     towers.push(tower);
     tower.draw(ctx, towerImage);
@@ -193,9 +194,14 @@ function placeNewTower() {
     towerInfo.towerAttack,
     towerInfo.towerRange,
     towerInfo.towerSpeed,
+    towerInfo.towerId,
   );
   towers.push(tower);
   tower.draw(ctx, towerImage);
+  serverSocket.emit('event', {
+    handlerId: 30,
+    towers,
+  });
 }
 
 function placeBase() {
@@ -232,12 +238,15 @@ function gameLoop() {
         Math.pow(tower.x - monster.x, 2) + Math.pow(tower.y - monster.y, 2),
       );
       if (distance < tower.range) {
+        const beforeHp = monster.hp;
         tower.attack(monster);
+        serverSocket.emit('event', {
+          handlerId: 31,
+          tower,
+          monster,
+          beforeHp,
+        });
       }
-      serverSocket.emit('event', {
-        handlerId: 30,
-        towers,
-      });
     });
   });
 

@@ -1,4 +1,4 @@
-import { towerHandler } from './tower.handler.js';
+import { towerAttackHandler, towerHandler } from './tower.handler.js';
 import { monsterKill } from './monster.handler.js';
 import { gameStartHandler, gameEndHandler } from './game.handler.js';
 const handlerMappings = {
@@ -8,6 +8,7 @@ const handlerMappings = {
   // 20: stage 관련 핸들러,
   11: monsterKill,
   30: towerHandler,
+  31: towerAttackHandler,
 };
 
 export default handlerMappings;
