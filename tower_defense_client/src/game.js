@@ -245,13 +245,11 @@ function gameLoop() {
       const isDestroyed = monster.move(base);
       if (isDestroyed) {
         /* 게임 오버 */
-        alert('게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ');
-
         serverSocket.emit('event', {
           handlerId: 2,
           score,
         });
-
+        alert('게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ');
         location.reload();
       }
       monster.draw(ctx);
@@ -260,6 +258,21 @@ function gameLoop() {
       monsters.splice(i, 1);
     }
   }
+
+  // 다음 스테이지가 존재하면
+  if (stageData[monsterLevel + 1]) {
+    // 다음 스테이지로 넘어갈 점수가 달성됐다면
+    if (score > stageData[monsterLevel + 1].stageStartScore) {
+      serverSocket.emit('event', {
+        handlerId: 21,
+        nowLevel: monsterLevel,
+        nextLevel: monsterLevel + 1,
+      });
+      monsterLevel += 1;
+      console.log('level up');
+    }
+  }
+  score += 2;
 
   requestAnimationFrame(gameLoop); // 지속적으로 다음 프레임에 gameLoop 함수 호출할 수 있도록 함
 }
