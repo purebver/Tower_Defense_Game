@@ -238,14 +238,16 @@ function gameLoop() {
         Math.pow(tower.x - monster.x, 2) + Math.pow(tower.y - monster.y, 2),
       );
       if (distance < tower.range) {
-        const beforeHp = monster.hp;
-        tower.attack(monster);
-        serverSocket.emit('event', {
-          handlerId: 31,
-          tower,
-          monster,
-          beforeHp,
-        });
+        if (tower.cooldown <= 0) {
+          const beforeHp = monster.hp;
+          tower.attack(monster);
+          serverSocket.emit('event', {
+            handlerId: 31,
+            tower,
+            monster,
+            beforeHp,
+          });
+        }
       }
     });
   });
