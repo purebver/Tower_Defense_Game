@@ -216,8 +216,10 @@ function gameLoop() {
       }
       monster.draw(ctx);
     } else {
-      /* 몬스터가 죽었을 때 */
-      monsters.splice(i, 1);
+      // 민석 추가 - 몬스터가 죽었을떄 골드, 점수 획득 및 삭제
+      userGold += monster.goldReward; // 몬스터가 주는 골드 추가
+      score += monster.scoreValue; // 몬스터가 주는 점수 추가
+      monsters.splice(i, 1); // 몬스터 목록에서 제거
     }
   }
 

@@ -16,6 +16,10 @@ export class Monster {
     this.image = monsterImages[this.monsterNumber]; // 몬스터 이미지
     this.level = level; // 몬스터 레벨
     this.init(level);
+
+    // 민석 추가 : 몬스터 사망 시 주는 돈과 점수
+    this.goldReward = 10; // 몬스터 사망 시 주는 금액
+    this.scoreValue = 200; // 몬스터 사망 시 주는 점수
   }
 
   init(level) {
