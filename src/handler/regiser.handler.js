@@ -10,6 +10,7 @@ const registerHandler = (io) => {
     //클라이언트가 보낸 token
     const [tokenType, token] = socket.handshake.auth.token.split(' ');
     const decodedToken = jwt.verify(token, process.env.JWT_KEY);
+    //토큰에서 id분리
     const accountId = decodedToken.id;
     console.log('accountId: ', accountId);
 
