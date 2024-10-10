@@ -1,12 +1,31 @@
 import { getData } from '../init/data.js';
-import { setTowers } from '../models/tower.model.js';
+import { getTowers, setTowers } from '../models/tower.model.js';
 
+/**
+ * @desc 초기 타워 검증
+ * @author 우종
+ */
 export const towerHandler = (accountId, data) => {
-  //준비중
-  setTowers(accountId, data);
+  //클라이언트의 현재 타워 개수
+  const currentTower = data.tower;
+  console.log('currentTower:', currentTower);
+  //초기 타워 개수
+  const startTower = data.numOfInitialTowers;
+  console.log('startTower:', startTower);
+
+  if (currentTower.lenght !== startTower) {
+    return { status: 'fail', message: 'Start Tower Over' };
+  }
+  setTowers(accountId, data.tower);
+  console.log('tower', data.tower);
+
   return { status: 'success', message: 'setTowers' };
 };
 
+/**
+ * @desc 타워->몬스터 Attack 검즘
+ * @author 재영
+ */
 export const towerAttackHandler = (accountId, data) => {
   //타워 db데이터
   const { towers } = getData();
@@ -32,6 +51,5 @@ export const towerAttackHandler = (accountId, data) => {
   if (lostHp !== dbTower.towerAttack) {
     return { status: 'fail', message: 'monster lost Hp' };
   }
-
   return { status: 'success', message: 'attackTowers' };
 };

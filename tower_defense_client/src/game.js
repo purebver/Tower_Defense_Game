@@ -166,12 +166,12 @@ function placeInitialTowers() {
     );
     towers.push(tower);
     tower.draw(ctx, towerImage);
-
-    serverSocket.emit('event', {
-      handlerId: 30,
-      towers,
-    });
   }
+  serverSocket.emit('event', {
+    handlerId: 30,
+    tower: towers,
+    numOfInitialTowers: numOfInitialTowers,
+  });
 }
 
 function placeNewTower() {
@@ -251,7 +251,6 @@ function gameLoop() {
       }
     });
   });
-
   // 몬스터가 공격을 했을 수 있으므로 기지 다시 그리기
   base.draw(ctx, baseImage);
 
