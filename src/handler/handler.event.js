@@ -1,5 +1,6 @@
 import handlerMappings from './handlerMapping.js';
 import { createTowers } from '../models/tower.model.js';
+import { createMonsters } from '../models/monster.model.js';
 import { getUser, removeUser } from '../models/user.model.js';
 
 export const handlerEvent = async (socket, token, data) => {
@@ -17,6 +18,7 @@ export const handleConnection = async (socket, token) => {
   console.log(`New user connected!`);
 
   createTowers(token);
+  createMonsters(token);
 
   socket.emit('connection', { status: 'success', message: 'New user connected' });
 };
