@@ -1,5 +1,5 @@
 import handlerMappings from './handlerMapping.js';
-import createTowers from '../models/tower.model.js';
+import { createTowers } from '../models/tower.model.js';
 import { getUser, removeUser } from '../models/user.model.js';
 
 export const handlerEvent = async (socket, token, data) => {
