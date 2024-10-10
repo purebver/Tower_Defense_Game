@@ -277,6 +277,10 @@ function initGame() {
   setInterval(spawnMonster, monsterSpawnInterval); // 설정된 몬스터 생성 주기마다 몬스터 생성
   gameLoop(); // 게임 루프 최초 실행
   isInitGame = true;
+  console.log('게임시작: initGame()');
+  serverSocket.emit('event', {
+    handlerId: 1,
+  });
 }
 
 // 이미지 로딩 완료 후 서버와 연결하고 게임 초기화
