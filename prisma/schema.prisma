@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,4 +5,55 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+// 유저 정보
+model User {
+  id                Int       @id @default(autoincrement()) // 유저 테이블 고유ID
+  userId            String    @unique                       // 유저ID
+  pw                String                                  // 유저PW
+  highScore         Int       @default(0)                   // 유저의 최고점수
+  createdAt         DateTime  @default(now())               // 계정이 생성된 시간
+
+  // 1:N 관계 - 한 명의 유저는 여러 게임 점수를 가질 수 있다.
+  gameScore         GameScore[]
+}
+
+// 게임 점수
+model GameScore {
+  id                Int       @id @default(autoincrement()) // 각 게임의 ID
+  userId            Int                           // 외래키(User와 연결)
+  level             Int       @default(1)         // 게임 종류 후 최종 레벨
+  score             Int       @default(0)         // 게임 종료 후 최종 점수
+  endTime           DateTime  @default(now())     // 게임 종료 시간
+
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// 스테이지 정보
+model Stage {
+  stageId           Int       @id                 // 스테이지 고유 ID
+  stageStartScore   Int       @unique             // 해당 스테이지가 시작되는 점수
+}
+
+// 타워 정보
+model Tower {
+  towerId           Int       @id                 // 타워 고유 ID
+  towerCost         Int       @default(1000)      // 타워 구매 비용
+  towerAttack       Int       @default(10)        // 타워의 공격력
+  towerSpeed        Int       @default(5000)      // 타워가 레이저를 쏘는 시간
+  towerRange        Int       @default(10)        // 타워가 몬스터를 인지하는 범위
+  img               String                        // 타워의 이미지 파일 경로
+}
+
+// 몬스터 정보
+model Monster {
+  monsterId         Int       @id                 // 몬스터 고유 ID
+  level             Int       @default(1)         // 몬스터 초기 레벨
+  monsterHp         Int       @default(50)        // 몬스터 HP
+  monsterAttack     Int       @default(10)        // 몬스터 공격력
+  monsterGold       Int                           // 몬스터를 죽이면 얻는 골드
+  monsterScore      Int                           // 몬스터 죽였을 때 얻는 점수
+  spawnTime         Int       @default(10000)     // 생성 주기, 10초마다 생성
+  img               String                        // 몬스터의 이미지 파일 경로
 }

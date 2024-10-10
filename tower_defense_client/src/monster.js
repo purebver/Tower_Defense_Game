@@ -18,8 +18,8 @@ export class Monster {
     this.init(level);
 
     // 민석 추가 : 몬스터 사망 시 주는 돈과 점수
-    this.goldReward = 10; // 몬스터 사망 시 주는 금액
-    this.scoreValue = 200; // 몬스터 사망 시 주는 점수
+    this.goldReward = Monster.id; // 몬스터 사망 시 주는 금액
+    this.scoreValue = Monster.id; // 몬스터 사망 시 주는 점수
   }
 
   init(level) {
