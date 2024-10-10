@@ -24,6 +24,7 @@ let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 3; // 초기 타워 개수
 let monsterLevel = 0; // 몬스터 레벨
 let monsterSpawnInterval = 5000; // 몬스터 생성 주기
+
 const monsters = [];
 const towers = [];
 
@@ -183,6 +184,7 @@ function placeNewTower() {
     return;
   }
   console.log('towerNum:', randomTowerId);
+  let currentGold = userGold;
   userGold -= towerInfo.towerCost;
 
   const { x, y } = getRandomPositionNearPath(0);
@@ -198,9 +200,12 @@ function placeNewTower() {
   );
   towers.push(tower);
   tower.draw(ctx, towerImage);
+
   serverSocket.emit('event', {
-    handlerId: 30,
-    towers,
+    handlerId: 32,
+    currentGold: currentGold,
+    afterGold: userGold,
+    currentTower: towers,
   });
 }
 

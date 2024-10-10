@@ -8,18 +8,42 @@ import { getTowers, setTowers } from '../models/tower.model.js';
 export const towerHandler = (accountId, data) => {
   //클라이언트의 현재 타워 개수
   const currentTower = data.tower;
-  console.log('currentTower:', currentTower);
+  console.log('currentTower:', currentTower.length);
   //초기 타워 개수
   const startTower = data.numOfInitialTowers;
   console.log('startTower:', startTower);
 
-  if (currentTower.lenght !== startTower) {
+  if (currentTower.length !== startTower) {
     return { status: 'fail', message: 'Start Tower Over' };
   }
   setTowers(accountId, data.tower);
   console.log('tower', data.tower);
 
-  return { status: 'success', message: 'setTowers' };
+  return { status: 'success', message: 'Correct Number of Towers' };
+};
+/**
+ * @desc 타워 구매시 유저 골드 차감
+ * @author 우종
+ */
+export const towerBuyHandler = (accountId, data) => {
+  //db의 타워
+  const { towers } = getData();
+  //클라이언트의 타워
+  const tower = data.currentTower[data.currentTower.length - 1];
+  const towerPrice = towers.find((a) => a.towerId === tower.towerId).towerCost;
+  //타워구매시 골드 차감됬는지 검증
+  if (data.currentGold - towerPrice !== data.afterGold) {
+    return { status: 'fail', message: 'It s not your money' };
+  }
+  //타워 구매시 타워가 구매한 만큼만 추가되었는지 검증
+  const getTower = getTowers(accountId);
+  console.log('getTower', getTower);
+  if (data.currentTower.length - 1 !== getTower[getTower.length - 1].length) {
+    return { status: 'fail', message: 'The Number of Towers Is Strange.' };
+  }
+
+  setTowers(accountId, data.currentTower);
+  return { status: 'success', message: 'Tower Purchase Success' };
 };
 
 /**
@@ -43,7 +67,7 @@ export const towerAttackHandler = (accountId, data) => {
   }
   //몬스터가 공격받고 잃어버린 체력
   const lostHp = data.beforeHp - monster.hp;
-  //타워 공격력 검증
+  //타워 공격력 검증n
   if (tower.attackPower !== dbTower.towerAttack) {
     return { status: 'fail', message: 'attackpower' };
   }
