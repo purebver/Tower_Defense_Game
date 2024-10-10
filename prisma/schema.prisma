@@ -52,6 +52,7 @@ model Monster {
   level             Int       @default(1)         // 몬스터 초기 레벨
   monsterHp         Int       @default(50)        // 몬스터 HP
   monsterAttack     Int       @default(10)        // 몬스터 공격력
+  mosterScore       Int                           // 몬스터 죽였을 때 얻는 점수
   spawnTime         Int       @default(10000)     // 생성 주기, 10초마다 생성
   img               String                        // 몬스터의 이미지 파일 경로
 }
