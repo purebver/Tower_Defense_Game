@@ -32,13 +32,13 @@ model GameScore {
 
 // 스테이지 정보
 model Stage {
-  stageId           Int       @id @default(autoincrement()) // 스테이지 고유 ID
+  stageId           Int       @id                 // 스테이지 고유 ID
   stageStartScore   Int       @unique             // 해당 스테이지가 시작되는 점수
 }
 
 // 타워 정보
 model Tower {
-  towerId           Int       @id @default(autoincrement()) // 타워 고유 ID
+  towerId           Int       @id                 // 타워 고유 ID
   towerCost         Int       @default(1000)      // 타워 구매 비용
   towerAttack       Int       @default(10)        // 타워의 공격력
   towerSpeed        Int       @default(5000)      // 타워가 레이저를 쏘는 시간
@@ -48,10 +48,11 @@ model Tower {
 
 // 몬스터 정보
 model Monster {
-  monsterId         Int       @id @default(autoincrement()) // 몬스터 고유 ID
+  monsterId         Int       @id                 // 몬스터 고유 ID
   level             Int       @default(1)         // 몬스터 초기 레벨
   monsterHp         Int       @default(50)        // 몬스터 HP
   monsterAttack     Int       @default(10)        // 몬스터 공격력
+  mosterScore       Int                           // 몬스터 죽였을 때 얻는 점수
   spawnTime         Int       @default(10000)     // 생성 주기, 10초마다 생성
   img               String                        // 몬스터의 이미지 파일 경로
 }
