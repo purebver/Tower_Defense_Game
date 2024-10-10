@@ -1,7 +1,6 @@
 import { towerHandler } from './tower.handler.js';
 import { monsterKill } from './monster.handler.js';
 import { moveStageHandler } from './stage.handler.js';
-import { gameEndHandler } from './game.handler.js';
 import { gameStartHandler, gameEndHandler } from './game.handler.js';
 
 const handlerMappings = {

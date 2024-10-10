@@ -6,7 +6,7 @@ export const gameStartHandler = () => {
   return { status: 'success', message: '게임 시작' };
 };
 
-export const gameEndHandler = async (uuid, payload) => {
+export const gameEndHandler = async (accountId, payload) => {
   try {
     // todo: 임의로 지정한 score, 추후 monster 처치로 인한 score가 구현 되면 추가
     let score = 100;
@@ -24,7 +24,7 @@ export const gameEndHandler = async (uuid, payload) => {
     // 게임 로그 db에 저장
     await prisma.gameScore.create({
       data: {
-        userId: +accountId,
+        userId: userInfo.id,
         level: 1, // 임시
         score,
         endTime: new Date(),
