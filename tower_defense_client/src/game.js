@@ -21,7 +21,7 @@ let monsterData = [];
 let stageData = [];
 
 let towerCost = 0; // 타워 구입 비용
-let numOfInitialTowers = 0; // 초기 타워 개수
+let numOfInitialTowers = 3; // 초기 타워 개수
 let monsterLevel = 0; // 몬스터 레벨
 let monsterSpawnInterval = 5000; // 몬스터 생성 주기
 const monsters = [];
@@ -150,7 +150,7 @@ function placeInitialTowers() {
   */
   console.log('towerData 연결?', towerData);
 
-  const towerInfo = towerData.find((a) => a.towerId === 1);
+  const towerInfo = towerData.find((a) => a.towerId === 100);
   console.log('towerInfo 연결', towerInfo);
 
   for (let i = 0; i < numOfInitialTowers; i++) {
@@ -165,6 +165,7 @@ function placeInitialTowers() {
     );
     towers.push(tower);
     tower.draw(ctx, towerImage);
+
     serverSocket.emit('event', {
       handlerId: 30,
       towers,
