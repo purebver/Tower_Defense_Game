@@ -23,7 +23,7 @@ let stageData = [];
 let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 0; // 초기 타워 개수
 let monsterLevel = 0; // 몬스터 레벨
-let monsterSpawnInterval = 1000; // 몬스터 생성 주기
+let monsterSpawnInterval = 5000; // 몬스터 생성 주기
 const monsters = [];
 const towers = [];
 
@@ -149,8 +149,8 @@ function placeInitialTowers() {
     무언가 빠진 코드가 있는 것 같지 않나요? 
   */
   console.log('towerData 연결?', towerData);
-  const randomTowerId = Math.floor(Math.random() * 5) + 100;
-  const towerInfo = towerData.find((a) => a.towerId === randomTowerId);
+
+  const towerInfo = towerData.find((a) => a.towerId === 1);
   console.log('towerInfo 연결', towerInfo);
 
   for (let i = 0; i < numOfInitialTowers; i++) {
@@ -180,7 +180,7 @@ function placeNewTower() {
     alert('message: 타워 구입에 필요한 금액이 부족합니다.');
     return;
   }
-
+  console.log('towerNum:', randomTowerId);
   userGold -= towerInfo.towerCost;
 
   const { x, y } = getRandomPositionNearPath(0);
@@ -233,6 +233,10 @@ function gameLoop() {
       if (distance < tower.range) {
         tower.attack(monster);
       }
+      serverSocket.emit('event', {
+        handlerId: 30,
+        towers,
+      });
     });
   });
 
@@ -288,6 +292,7 @@ Promise.all([
   ...monsterImages.map((img) => new Promise((resolve) => (img.onload = resolve))),
 ]).then(() => {
   /* 서버 접속 코드 (여기도 완성해주세요!) */
+
   let somewhere = localStorage.getItem('Authorization');
   serverSocket = io('http://localhost:3000', {
     auth: {
@@ -309,6 +314,7 @@ Promise.all([
   serverSocket.on('response', (data) => {
     console.log(data);
   });
+
   /* 
     서버의 이벤트들을 받는 코드들은 여기다가 쭉 작성해주시면 됩니다! 
     e.g. serverSocket.on("...", () => {...});
