@@ -2,6 +2,7 @@ import handlerMappings from './handlerMapping.js';
 import { createTowers } from '../models/tower.model.js';
 import { createMonsters } from '../models/monster.model.js';
 import { getUser, removeUser } from '../models/user.model.js';
+import { createStages } from '../models/stage.model.js';
 
 export const handlerEvent = async (socket, accountId, data) => {
   const handler = handlerMappings[data.handlerId];
@@ -9,7 +10,7 @@ export const handlerEvent = async (socket, accountId, data) => {
     socket.emit('response', { status: 'fail', message: 'handler not found' });
   }
 
-  const response = handler(accountId, data);
+  const response = await handler(accountId, data);
 
   socket.emit('response', response);
 };
@@ -19,6 +20,7 @@ export const handleConnection = async (socket, accountId) => {
 
   createTowers(accountId);
   createMonsters(accountId);
+  createStages(accountId);
 
   socket.emit('connection', { status: 'success', message: 'New user connected' });
 };
