@@ -14,7 +14,7 @@ export const getTowers = (token) => {
 
 //유저 타워 배열 첫 세팅
 export const setTowers = (token, towersdata) => {
-  console.log(`setStage`);
+  console.log(`setTowers`);
   return towers[token].push({ towersdata });
 };
 

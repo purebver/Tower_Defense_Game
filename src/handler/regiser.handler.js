@@ -1,13 +1,17 @@
 import { getData } from '../init/data.js';
-import { handleConnection, handlerEvent } from './handler.event.js';
+import { handleConnection, handleDisconnect, handlerEvent } from './handler.event.js';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const registerHandler = (io) => {
   io.on('connection', async (socket) => {
     //connection 이벤트 처리
     //클라이언트가 보낸 token
-    const token = socket.handshake.auth.token;
-
-    console.log('token: ', token);
+    const [tokenType, token] = socket.handshake.auth.token.split(' ');
+    const decodedToken = jwt.verify(token, process.env.JWT_KEY);
+    const accountId = decodedToken.id;
+    console.log('accountId: ', accountId);
 
     console.log('user connection');
 
@@ -21,12 +25,12 @@ const registerHandler = (io) => {
     });
 
     //접속 후
-    handleConnection(token);
-    socket.on('event', (data) => handlerEvent(socket, token, data));
+    handleConnection(socket, accountId);
+    socket.on('event', (data) => handlerEvent(socket, accountId, data));
 
     //접속 해제 시 이벤트
     socket.on('disconnect', () => {
-      handleDisconnect(token);
+      handleDisconnect(accountId);
       console.log('user disconnect');
     });
   });
