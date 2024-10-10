@@ -24,10 +24,7 @@ export const gameEndHandler = async (uuid, payload) => {
     });
 
     // 응답 생성
-    const response = {
-      event: 'gameover',
-      data: { status: 'success', message: '게임 종료', score: score },
-    };
+    const response = { status: 'success', message: '게임 종료', score: score };
 
     // 유저 개인 최고 기록 갱신
     if (userInfo.highScore < score) {
@@ -38,7 +35,7 @@ export const gameEndHandler = async (uuid, payload) => {
         },
       });
       // 응답에 newHighScore 추가
-      response.data.newHighScore = 'highScore!';
+      response.newHighScore = 'highScore!';
     }
 
     return response;

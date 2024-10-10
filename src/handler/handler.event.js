@@ -1,5 +1,5 @@
 import handlerMappings from './handlerMapping.js';
-import createTowers from '../models/tower.model.js';
+import { createTowers } from '../models/tower.model.js';
 import { getUser, removeUser } from '../models/user.model.js';
 
 export const handlerEvent = async (socket, token, data) => {
@@ -11,8 +11,6 @@ export const handlerEvent = async (socket, token, data) => {
   const response = handler(token, data);
 
   socket.emit('response', response);
-  // 제안
-  // socket.emit(response.event, response.data);
 };
 
 export const handleConnection = async (socket, token) => {

@@ -313,9 +313,6 @@ Promise.all([
   serverSocket.on('response', (data) => {
     console.log(data);
   });
-  serverSocket.on('gameover', (data) => {
-    console.log(data);
-  });
   /* 
     서버의 이벤트들을 받는 코드들은 여기다가 쭉 작성해주시면 됩니다! 
     e.g. serverSocket.on("...", () => {...});
