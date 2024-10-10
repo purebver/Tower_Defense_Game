@@ -1,26 +1,30 @@
 import { prisma } from '../utils/prisma/prisma.client.js';
 
-export const gameEndHandler = async (uuid, payload) => {
+export const gameEndHandler = async (accountId, payload) => {
+  console.log('accountId: ', accountId);
+  console.log('payload: ', payload);
   try {
     // todo: 임의로 지정한 score, 추후 monster 처치로 인한 score가 구현 되면 추가
     let score = 100;
 
     // 점수 검증
     if (score !== payload.score) {
-      return { status: 'failed', message: 'Score unmatched' };
+      //return { status: 'failed', message: 'Score unmatched' };
     }
 
     // 유저 정보 검색
     const userInfo = await prisma.user.findUnique({
-      where: { id: uuid },
+      where: { id: accountId },
     });
 
     // 게임 로그 db에 저장
     await prisma.gameScore.create({
-      uuid,
-      level: 1, // 임시
-      score,
-      endTime: Date.now(),
+      data: {
+        userId: +accountId,
+        level: 1, // 임시
+        score,
+        endTime: new Date(),
+      },
     });
 
     // 응답 생성
@@ -29,7 +33,7 @@ export const gameEndHandler = async (uuid, payload) => {
     // 유저 개인 최고 기록 갱신
     if (userInfo.highScore < score) {
       await prisma.user.update({
-        where: { id: uuid },
+        where: { id: accountId },
         data: {
           highScore: score,
         },
