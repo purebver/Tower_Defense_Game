@@ -24,6 +24,7 @@ let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 3; // 초기 타워 개수
 let monsterLevel = 0; // 몬스터 레벨
 let monsterSpawnInterval = 5000; // 몬스터 생성 주기
+
 const monsters = [];
 const towers = [];
 
@@ -183,6 +184,7 @@ function placeNewTower() {
     return;
   }
   console.log('towerNum:', randomTowerId);
+  let currentGold = userGold;
   userGold -= towerInfo.towerCost;
 
   const { x, y } = getRandomPositionNearPath(0);
@@ -198,9 +200,12 @@ function placeNewTower() {
   );
   towers.push(tower);
   tower.draw(ctx, towerImage);
+
   serverSocket.emit('event', {
-    handlerId: 30,
-    towers,
+    handlerId: 32,
+    currentGold: currentGold,
+    afterGold: userGold,
+    currentTower: towers,
   });
 }
 
@@ -299,7 +304,6 @@ function initGame() {
 
   monsterPath = generateRandomMonsterPath(); // 몬스터 경로 생성
   initMap(); // 맵 초기화 (배경, 몬스터 경로 그리기)
-  placeInitialTowers(); // 설정된 초기 타워 개수만큼 사전에 타워 배치
   placeBase(); // 기지 배치
 
   setInterval(spawnMonster, monsterSpawnInterval); // 설정된 몬스터 생성 주기마다 몬스터 생성
@@ -309,6 +313,7 @@ function initGame() {
   serverSocket.emit('event', {
     handlerId: 1,
   });
+  placeInitialTowers(); // 설정된 초기 타워 개수만큼 사전에 타워 배치
 }
 
 // 이미지 로딩 완료 후 서버와 연결하고 게임 초기화
