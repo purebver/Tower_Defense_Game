@@ -17,8 +17,8 @@ router.post('/sign-up', async (req, res, next) => {
     const { userId, pw } = req.body;
 
     // 동일한 아이디
-    const isExistUserId = await prisma.user.findUnique({
-      where: { userId },
+    const isExistUserId = await prisma.user.findFirst({
+      where: { userId: userId },
     });
 
     // 유효성 검사
