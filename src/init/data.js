@@ -4,9 +4,9 @@ let gameData = {};
 
 export const readData = async () => {
   const [towers, monsters, stages] = await Promise.all([
-    prisma.Tower.findMany(),
-    prisma.Monster.findMany(),
-    prisma.Stage.findMany(),
+    prisma.tower.findMany(),
+    prisma.monster.findMany(),
+    prisma.stage.findMany(),
   ]);
   gameData = { towers, monsters, stages };
   return gameData;

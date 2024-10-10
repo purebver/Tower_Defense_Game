@@ -36,7 +36,7 @@ const backgroundImage = new Image();
 backgroundImage.src = 'images/bg.webp';
 
 const towerImage = new Image();
-towerImage.src = 'images/tower.png';
+towerImage.src = 'images/towerBase.png';
 
 const baseImage = new Image();
 baseImage.src = 'images/base.png';
@@ -149,8 +149,8 @@ function placeInitialTowers() {
     무언가 빠진 코드가 있는 것 같지 않나요? 
   */
   console.log('towerData 연결?', towerData);
-  const randomTowerId = Math.floor(Math.random() * 5) + 1;
-  const towerInfo = towerData.find((a) => a.towerId === 1);
+  const randomTowerId = Math.floor(Math.random() * 5) + 100;
+  const towerInfo = towerData.find((a) => a.towerId === randomTowerId);
   console.log('towerInfo 연결', towerInfo);
 
   for (let i = 0; i < numOfInitialTowers; i++) {
@@ -173,7 +173,7 @@ function placeInitialTowers() {
 }
 
 function placeNewTower() {
-  const randomTowerId = Math.floor(Math.random() * 5) + 1;
+  const randomTowerId = Math.floor(Math.random() * 5) + 100;
   const towerInfo = towerData.find((a) => a.towerId === randomTowerId);
 
   if (userGold < towerInfo.towerCost) {
@@ -233,10 +233,6 @@ function gameLoop() {
       if (distance < tower.range) {
         tower.attack(monster);
       }
-      serverSocket.emit('event', {
-        handlerId: 30,
-        towers,
-      });
     });
   });
 
@@ -292,11 +288,11 @@ Promise.all([
   ...monsterImages.map((img) => new Promise((resolve) => (img.onload = resolve))),
 ]).then(() => {
   /* 서버 접속 코드 (여기도 완성해주세요!) */
-  // let somewhere = localStorage.getItem();
+  let somewhere = localStorage.getItem('Authorization');
   serverSocket = io('http://localhost:3000', {
-    // auth: {
-    //   token: somewhere, // 토큰이 저장된 어딘가에서 가져와야 합니다!
-    // },
+    auth: {
+      token: somewhere, // 토큰이 저장된 어딘가에서 가져와야 합니다!
+    },
   });
   serverSocket.on('datainfo', async ({ towers, monsters, stages }) => {
     towerData.push(...towers);

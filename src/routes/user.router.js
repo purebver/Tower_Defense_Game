@@ -69,10 +69,10 @@ router.post('/sign-in', async (req, res, next) => {
     }
 
     // 토큰 발급
-    const token = jwt.sign({ userId: user.userId }, env.JWT_KEY, {
+    const token = jwt.sign({ userId: user.id }, env.JWT_KEY, {
       expiresIn: '30m',
     });
-    res.header('Authorization', ` ${env.JWT_KEY}${token}`);
+    res.header('Authorization', ` ${env.JWT_KEY} ${token}`);
 
     return res.status(200).json({
       message: '로그인이 성공했습니다.',
