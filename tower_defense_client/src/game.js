@@ -250,6 +250,12 @@ function gameLoop() {
       if (isDestroyed) {
         /* 게임 오버 */
         alert('게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ');
+
+        serverSocket.emit('event', {
+          handlerId: 2,
+          score,
+        });
+
         location.reload();
       }
       monster.draw(ctx);
@@ -305,6 +311,9 @@ Promise.all([
     console.log(data);
   });
   serverSocket.on('response', (data) => {
+    console.log(data);
+  });
+  serverSocket.on('gameover', (data) => {
     console.log(data);
   });
   /* 

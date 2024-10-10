@@ -11,6 +11,8 @@ export const handlerEvent = async (socket, token, data) => {
   const response = handler(token, data);
 
   socket.emit('response', response);
+  // 제안
+  // socket.emit(response.event, response.data);
 };
 
 export const handleConnection = async (socket, token) => {
