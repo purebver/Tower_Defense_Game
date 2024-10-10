@@ -6,7 +6,8 @@ export const gameStartHandler = (accountId, data) => {
   clearTowers(accountId);
   clearMonsters(accountId);
 
-  return { status: 'success', message: 'Game Start'};
+  return { status: 'success', message: 'Game Start' };
+};
 
 export const gameEndHandler = async (accountId, payload) => {
   try {
