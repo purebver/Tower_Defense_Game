@@ -8,14 +8,14 @@ export const createTowers = (accountId) => {
 
 //유저 타워 정보 받아오기
 export const getTowers = (accountId) => {
-  console.log(`getTowers`, towers);
+  console.log(`getTowers`);
   return towers[accountId];
 };
 
 //유저 타워 배열 첫 세팅
 export const setTowers = (accountId, towersdata) => {
   console.log(`setTowers`);
-  console.log(`towers: `, towers);
+  // console.log(`towers: `, towers);
   return towers[accountId].push(towersdata);
 };
 

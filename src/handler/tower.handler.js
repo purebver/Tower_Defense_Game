@@ -8,16 +8,16 @@ import { getTowers, setTowers } from '../models/tower.model.js';
 export const towerHandler = (accountId, data) => {
   //클라이언트의 현재 타워 개수
   const currentTower = data.tower;
-  console.log('currentTower:', currentTower.length);
+  // console.log('currentTower:', currentTower.length);
   //초기 타워 개수
   const startTower = data.numOfInitialTowers;
-  console.log('startTower:', startTower);
+  // console.log('startTower:', startTower);
 
   if (currentTower.length !== startTower) {
     return { status: 'fail', message: 'Start Tower Over' };
   }
   setTowers(accountId, data.tower);
-  console.log('tower', data.tower);
+  // console.log('tower', data.tower);
 
   return { status: 'success', message: 'Correct Number of Towers' };
 };
@@ -37,7 +37,7 @@ export const towerBuyHandler = (accountId, data) => {
   }
   //타워 구매시 타워가 구매한 만큼만 추가되었는지 검증
   const getTower = getTowers(accountId);
-  console.log('getTower', getTower);
+  // console.log('getTower', getTower);
   if (data.currentTower.length - 1 !== getTower[getTower.length - 1].length) {
     return { status: 'fail', message: 'The Number of Towers Is Strange.' };
   }
