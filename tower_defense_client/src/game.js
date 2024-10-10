@@ -162,15 +162,16 @@ function placeInitialTowers() {
       towerInfo.towerAttack,
       towerInfo.towerRange,
       towerInfo.towerSpeed,
+      towerInfo.towerId,
     );
     towers.push(tower);
     tower.draw(ctx, towerImage);
-
-    serverSocket.emit('event', {
-      handlerId: 30,
-      towers,
-    });
   }
+  serverSocket.emit('event', {
+    handlerId: 30,
+    tower: towers,
+    numOfInitialTowers: numOfInitialTowers,
+  });
 }
 
 function placeNewTower() {
@@ -193,9 +194,14 @@ function placeNewTower() {
     towerInfo.towerAttack,
     towerInfo.towerRange,
     towerInfo.towerSpeed,
+    towerInfo.towerId,
   );
   towers.push(tower);
   tower.draw(ctx, towerImage);
+  serverSocket.emit('event', {
+    handlerId: 30,
+    towers,
+  });
 }
 
 function placeBase() {
@@ -232,15 +238,19 @@ function gameLoop() {
         Math.pow(tower.x - monster.x, 2) + Math.pow(tower.y - monster.y, 2),
       );
       if (distance < tower.range) {
-        tower.attack(monster);
+        if (tower.cooldown <= 0) {
+          const beforeHp = monster.hp;
+          tower.attack(monster);
+          serverSocket.emit('event', {
+            handlerId: 31,
+            tower,
+            monster,
+            beforeHp,
+          });
+        }
       }
-      serverSocket.emit('event', {
-        handlerId: 30,
-        towers,
-      });
     });
   });
-
   // 몬스터가 공격을 했을 수 있으므로 기지 다시 그리기
   base.draw(ctx, baseImage);
 
