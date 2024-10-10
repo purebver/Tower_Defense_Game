@@ -26,6 +26,7 @@ const registerHandler = (io) => {
 
     //접속 해제 시 이벤트
     socket.on('disconnect', () => {
+      handleDisconnect(token);
       console.log('user disconnect');
     });
   });
