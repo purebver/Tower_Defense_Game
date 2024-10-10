@@ -166,12 +166,12 @@ function placeInitialTowers() {
     );
     towers.push(tower);
     tower.draw(ctx, towerImage);
-
-    serverSocket.emit('event', {
-      handlerId: 30,
-      towers,
-    });
   }
+  serverSocket.emit('event', {
+    handlerId: 30,
+    tower: towers,
+    numOfInitialTowers: numOfInitialTowers,
+  });
 }
 
 function placeNewTower() {
@@ -238,18 +238,19 @@ function gameLoop() {
         Math.pow(tower.x - monster.x, 2) + Math.pow(tower.y - monster.y, 2),
       );
       if (distance < tower.range) {
-        const beforeHp = monster.hp;
-        tower.attack(monster);
-        serverSocket.emit('event', {
-          handlerId: 31,
-          tower,
-          monster,
-          beforeHp,
-        });
+        if (tower.cooldown <= 0) {
+          const beforeHp = monster.hp;
+          tower.attack(monster);
+          serverSocket.emit('event', {
+            handlerId: 31,
+            tower,
+            monster,
+            beforeHp,
+          });
+        }
       }
     });
   });
-
   // 몬스터가 공격을 했을 수 있으므로 기지 다시 그리기
   base.draw(ctx, baseImage);
 
