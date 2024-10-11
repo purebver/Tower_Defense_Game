@@ -12,9 +12,9 @@ const ctx = canvas.getContext('2d');
 
 const NUM_OF_MONSTERS = 5; // 몬스터 개수
 
-let userGold = 0; // 유저 골드
+let userGold = 5000; // 유저 골드
 let base; // 기지 객체
-let baseHp = 0; // 기지 체력
+let baseHp = 1000; // 기지 체력
 
 let towerData = [];
 let monsterData = [];
@@ -23,7 +23,7 @@ let stageData = [];
 let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 3; // 초기 타워 개수
 let monsterLevel = 0; // 몬스터 레벨
-let monsterSpawnInterval = 1000; // 몬스터 생성 주기
+let monsterSpawnInterval = 500; // 몬스터 생성 주기
 
 const monsters = [];
 const towers = [];
@@ -142,14 +142,7 @@ function getRandomPositionNearPath(maxDistance) {
 }
 
 function placeInitialTowers() {
-  /* 
-    타워를 초기에 배치하는 함수입니다.
-    무언가 빠진 코드가 있는 것 같지 않나요? 
-  */
-  console.log('towerData 연결?', towerData);
-
   const towerInfo = towerData.find((a) => a.towerId === 100);
-  console.log('towerInfo 연결', towerInfo);
 
   let tower;
   for (let i = 0; i < numOfInitialTowers; i++) {
@@ -277,6 +270,7 @@ function gameLoop() {
     const monster = monsters[i];
     if (monster.hp > 0) {
       const isDestroyed = monster.move(base);
+
       if (isDestroyed) {
         /* 게임 오버 */
         serverSocket.emit('event', {
@@ -287,6 +281,8 @@ function gameLoop() {
         location.reload();
       }
       monster.draw(ctx);
+    } else if (monster.hp < -9000) {
+      monsters.splice(i, 1);
     } else {
       /* 몬스터가 죽었을 때 */
       userGold += monster.monsterGold; // 몬스터가 주는 골드 추가
@@ -370,13 +366,6 @@ Promise.all([
   serverSocket.on('response', (data) => {
     console.log(data);
   });
-
-  /* 
-    서버의 이벤트들을 받는 코드들은 여기다가 쭉 작성해주시면 됩니다! 
-    e.g. serverSocket.on("...", () => {...});
-    이 때, 상태 동기화 이벤트의 경우에 아래의 코드를 마지막에 넣어주세요! 최초의 상태 동기화 이후에 게임을 초기화해야 하기 때문입니다! 
-    
-  */
 });
 
 const buyTowerButton = document.createElement('button');
@@ -391,3 +380,18 @@ buyTowerButton.style.cursor = 'pointer';
 buyTowerButton.addEventListener('click', placeNewTower);
 
 document.body.appendChild(buyTowerButton);
+
+const sellTowerButton = document.createElement('button');
+sellTowerButton.textContent = '타워 판매';
+sellTowerButton.style.position = 'absolute';
+sellTowerButton.style.top = '50px';
+sellTowerButton.style.right = '10px';
+sellTowerButton.style.padding = '10px 20px';
+sellTowerButton.style.fontSize = '16px';
+sellTowerButton.style.cursor = 'pointer';
+
+sellTowerButton.addEventListener('click', placeNewTower);
+
+document.body.appendChild(sellTowerButton);
+
+let selectedTower = null;

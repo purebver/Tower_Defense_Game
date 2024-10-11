@@ -1,7 +1,7 @@
 import { getData } from '../init/data.js';
 import { getStages, useMoney } from '../models/stage.model.js';
 import { getTowers, setTowers } from '../models/tower.model.js';
-import goldCalculate from './gold.handler.js'
+import goldCalculate from './gold.handler.js';
 
 /**
  * @desc 초기 타워 검증
@@ -67,7 +67,6 @@ export const towerBuyHandler = (accountId, data) => {
   setTowers(accountId, data.towerObj);
 
   useMoney(accountId, towerPrice);
-  setTowers(accountId, data.currentTower);
 
   goldCalculate(getTowers(accountId));
 
