@@ -424,14 +424,13 @@ function sellTower() {
   if (selectedTowerIndex !== null) {
     const [tower] = towers.splice(selectedTowerIndex, 1);
     const beforeGold = userGold;
-
+    userGold += tower.cost;
     serverSocket.emit('event', {
       handlerId: 34,
       beforeGold,
-      userGold: userGold + tower.cost,
+      userGold: userGold,
       selectedTowerIndex,
     });
-    userGold += tower.cost;
   }
   selectedTowerIndex = null;
 }

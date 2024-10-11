@@ -12,14 +12,20 @@ export const getTowers = (accountId) => {
   return towers[accountId];
 };
 
-//유저 타워 배열 첫 세팅
+//유저 타워 배열
 export const setTowers = (accountId, towersdata) => {
   console.log(`setTowers`);
   // console.log(`towers: `, towers);
   return towers[accountId].push(towersdata);
 };
 
-//유저 스테이지 비우기
+//유저 특정 타워 제거
+export const deleteTowers = (accountId, selectedTowerIndex) => {
+  console.log(`deleteTowers`);
+  return towers[accountId].splice(selectedTowerIndex, 1);
+};
+
+//유저 타워 비우기
 export const clearTowers = (accountId) => {
   console.log(`clearTowers`);
   towers[accountId] = [];
