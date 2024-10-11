@@ -36,9 +36,6 @@ let isInitGame = false;
 const backgroundImage = new Image();
 backgroundImage.src = 'images/bg.webp';
 
-const towerImage = new Image();
-towerImage.src = 'images/towerBase.png';
-
 const baseImage = new Image();
 baseImage.src = 'images/base.png';
 
@@ -165,15 +162,16 @@ function placeInitialTowers() {
       towerInfo.towerRange,
       towerInfo.towerSpeed,
       towerInfo.towerId,
+      towerInfo.img,
     );
     towers.push(tower);
-    tower.draw(ctx, towerImage);
+    tower.draw(ctx);
   }
   serverSocket.emit('event', {
     handlerId: 30,
     tower: towers,
     numOfInitialTowers: numOfInitialTowers,
-    towerObj: tower
+    towerObj: tower,
   });
 }
 
@@ -199,16 +197,17 @@ function placeNewTower() {
     towerInfo.towerRange,
     towerInfo.towerSpeed,
     towerInfo.towerId,
+    towerInfo.img,
   );
   towers.push(tower);
-  tower.draw(ctx, towerImage);
+  tower.draw(ctx);
 
   serverSocket.emit('event', {
     handlerId: 32,
     currentGold: currentGold,
     afterGold: userGold,
     currentTower: towers,
-    towerObj: tower
+    towerObj: tower,
   });
   serverSocket.emit('event', {
     handlerId: 33,
@@ -251,7 +250,7 @@ function gameLoop() {
 
   // 타워 그리기 및 몬스터 공격 처리
   towers.forEach((tower) => {
-    tower.draw(ctx, towerImage);
+    tower.draw(ctx);
     tower.updateCooldown();
     monsters.forEach((monster) => {
       const distance = Math.sqrt(
@@ -339,7 +338,6 @@ function initGame() {
 // 이미지 로딩 완료 후 서버와 연결하고 게임 초기화
 Promise.all([
   new Promise((resolve) => (backgroundImage.onload = resolve)),
-  new Promise((resolve) => (towerImage.onload = resolve)),
   new Promise((resolve) => (baseImage.onload = resolve)),
   new Promise((resolve) => (pathImage.onload = resolve)),
   ...monsterImages.map((img) => new Promise((resolve) => (img.onload = resolve))),
