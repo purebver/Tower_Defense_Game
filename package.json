@@ -1,7 +1,10 @@
 {
-  "name": "Tower_Defense_Game",
+  "name": "tower_defense_game",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/app.js",
+  "scripts": {
+    "dev": "nodemon src/app.js"
+  },
   "repository": "https://github.com/purebver/Tower_Defense_Game.git",
   "author": "",
   "type": "module",
