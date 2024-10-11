@@ -14,13 +14,18 @@ const ctx = canvas.getContext('2d');
 const MIN_MONSTER_ID = 300; // 가장 작은 몬스터 id
 let lastSpawnedMonsterId = MIN_MONSTER_ID; // 마지막에 소환된 몬스터 id
 
+//강화시 체력 / 기본 체력/ 강화비용
+let upgradeIndex = 0; //기지 강화 수치 초기값
+
 let userGold = 5000; // 유저 골드
 let base; // 기지 객체
-let baseHp = 1000; // 기지 체력
+let firstHp = 1000; // 시작시 초기 체력
+let baseHp = firstHp; // 기지 체력
 
 let towerData = [];
 let monsterData = [];
 let stageData = [];
+let baseData = [];
 
 let selectedTowerIndex = null; //선택된 타워 index
 
@@ -87,6 +92,23 @@ function generateRandomMonsterPath() {
 function initMap() {
   ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height); // 배경 이미지 그리기
   drawPath();
+}
+
+//기지 업그레이드 로직
+function baseUpgrade() {
+  //[0,1000,2000,4000,8000]
+  let baseMaxHp = baseData[upgradeIndex].baseHp; //기지 최대 체력
+  console.log('기지ID', baseMaxHp);
+  //업그레이드 가능 여부 체크
+  if (upgradeIndex < baseData.length - 1) {
+    upgradeIndex++;
+    userGold -= baseData[upgradeIndex].baseUpgradeCost;
+    baseHp += baseMaxHp; // 기지 체력에 추가
+    console.log('기지 강화 성공');
+    placeBase();
+  } else {
+    console.log('최대치임');
+  }
 }
 
 function drawPath() {
@@ -173,12 +195,21 @@ function placeInitialTowers() {
 }
 
 function placeNewTower() {
+
+  const upgradeTower = towerData[upgradeIndex].towerId;
+  const towerInfo = towerData.find((a) => a.towerId === upgradeTower);
+  console.log('타워번호', upgradeTower);
+
   const towerInfo = towerData.find((a) => a.towerId === 100);
+
 
   if (userGold < towerInfo.towerCost) {
     alert('message: 타워 구입에 필요한 금액이 부족합니다.');
     return;
-  }
+
+  console.log('towerNum:', upgradeTower);
+
+
   let currentGold = userGold;
   userGold -= towerInfo.towerCost;
 
@@ -369,10 +400,11 @@ Promise.all([
       token: somewhere, // 토큰이 저장된 어딘가에서 가져와야 합니다!
     },
   });
-  serverSocket.on('datainfo', async ({ towers, monsters, stages }) => {
+  serverSocket.on('datainfo', async ({ towers, monsters, stages, bases }) => {
     towerData.push(...towers);
     monsterData.push(...monsters);
     stageData.push(...stages);
+    baseData.push(...bases);
     console.log('datainfo get');
     if (!isInitGame) {
       initGame();
@@ -390,11 +422,13 @@ Promise.all([
   });
 });
 
+//버튼 조정 로직
+
 const buyTowerButton = document.createElement('button');
 buyTowerButton.textContent = '타워 구입';
 buyTowerButton.style.position = 'absolute';
 buyTowerButton.style.top = '10px';
-buyTowerButton.style.right = '10px';
+buyTowerButton.style.right = '350px';
 buyTowerButton.style.padding = '10px 20px';
 buyTowerButton.style.fontSize = '16px';
 buyTowerButton.style.cursor = 'pointer';
@@ -406,8 +440,8 @@ document.body.appendChild(buyTowerButton);
 const sellTowerButton = document.createElement('button');
 sellTowerButton.textContent = '타워 판매';
 sellTowerButton.style.position = 'absolute';
-sellTowerButton.style.top = '50px';
-sellTowerButton.style.right = '10px';
+sellTowerButton.style.top = '10px';
+sellTowerButton.style.right = '180px';
 sellTowerButton.style.padding = '10px 20px';
 sellTowerButton.style.fontSize = '16px';
 sellTowerButton.style.cursor = 'pointer';
@@ -417,6 +451,22 @@ sellTowerButton.addEventListener('click', () => {
 });
 
 document.body.appendChild(sellTowerButton);
+
+
+let selectedTower = null;
+
+const baseUpgradeButton = document.createElement('button');
+baseUpgradeButton.textContent = '기지 강화';
+baseUpgradeButton.style.position = 'absolute';
+baseUpgradeButton.style.top = '10px';
+baseUpgradeButton.style.right = '10px';
+baseUpgradeButton.style.padding = '10px 20px';
+baseUpgradeButton.style.fontSize = '16px';
+baseUpgradeButton.style.cursor = 'pointer';
+
+baseUpgradeButton.addEventListener('click', baseUpgrade);
+
+document.body.appendChild(baseUpgradeButton);
 
 //타워 선택 및 판매 메서드
 function sellTower() {
@@ -463,3 +513,4 @@ canvas.addEventListener('click', (coordinate) => {
     selectedTowerIndex = null;
   }
 });
+
