@@ -16,6 +16,12 @@ export const setBases = (accountId, basesdata) => {
   return bases[accountId].push(basesdata);
 };
 
+//유저 특정 기지 제거
+export const deleteBase = (accountId, selectedBaseIndex) => {
+  console.log(`deleteBase`);
+  return bases[accountId].splice(selectedBaseIndex, 1);
+};
+
 //기지 배열 비우기
 export const clearBases = (accountId) => {
   console.log(`clearBases`);
