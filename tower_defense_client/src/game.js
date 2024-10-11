@@ -12,7 +12,7 @@ const ctx = canvas.getContext('2d');
 
 const NUM_OF_MONSTERS = 5; // 몬스터 개수
 
-let baseMaxHp = [0, 1000, 2000, 4000, 8000]; //기지 최대 체력
+//강화시 체력 / 기본 체력/ 강화비용
 let upgradeIndex = 0; //기지 강화 수치 초기값
 
 let userGold = 5000; // 유저 골드
@@ -20,22 +20,10 @@ let base; // 기지 객체
 let firstHp = 1000; // 시작시 초기 체력
 let baseHp = firstHp; // 기지 체력
 
-//기지 업그레이드 로직
-function baseUpgrade() {
-  //업그레이드 가능 여부 체크
-  if (upgradeIndex < baseMaxHp.length - 1) {
-    upgradeIndex++;
-    baseHp += baseMaxHp[upgradeIndex]; // 기지 체력에 추가
-    console.log('기지 강화 성공');
-    placeBase();
-  } else {
-    console.log('최대치임');
-  }
-}
-
 let towerData = [];
 let monsterData = [];
 let stageData = [];
+let baseData = [];
 
 let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 3; // 초기 타워 개수
@@ -100,6 +88,23 @@ function generateRandomMonsterPath() {
 function initMap() {
   ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height); // 배경 이미지 그리기
   drawPath();
+}
+
+//기지 업그레이드 로직
+function baseUpgrade() {
+  //[0,1000,2000,4000,8000]
+  let baseMaxHp = baseData[upgradeIndex].baseHp; //기지 최대 체력
+  console.log('기지ID', baseMaxHp);
+  //업그레이드 가능 여부 체크
+  if (upgradeIndex < baseData.length - 1) {
+    upgradeIndex++;
+    userGold -= baseData[upgradeIndex].baseUpgradeCost;
+    baseHp += baseMaxHp; // 기지 체력에 추가
+    console.log('기지 강화 성공');
+    placeBase();
+  } else {
+    console.log('최대치임');
+  }
 }
 
 function drawPath() {
@@ -185,9 +190,9 @@ function placeInitialTowers() {
   });
 }
 
-async function placeNewTower() {
+function placeNewTower() {
   const upgradeTower = towerData[upgradeIndex].towerId;
-  const towerInfo = await towerData.find((a) => a.towerId === upgradeTower);
+  const towerInfo = towerData.find((a) => a.towerId === upgradeTower);
   console.log('타워번호', upgradeTower);
 
   if (userGold < towerInfo.towerCost) {
@@ -369,10 +374,11 @@ Promise.all([
       token: somewhere, // 토큰이 저장된 어딘가에서 가져와야 합니다!
     },
   });
-  serverSocket.on('datainfo', async ({ towers, monsters, stages }) => {
+  serverSocket.on('datainfo', async ({ towers, monsters, stages, bases }) => {
     towerData.push(...towers);
     monsterData.push(...monsters);
     stageData.push(...stages);
+    baseData.push(...bases);
     console.log('datainfo get');
     if (!isInitGame) {
       initGame();
@@ -385,6 +391,8 @@ Promise.all([
     console.log(data);
   });
 });
+
+//버튼 조정 로직
 
 const buyTowerButton = document.createElement('button');
 buyTowerButton.textContent = '타워 구입';

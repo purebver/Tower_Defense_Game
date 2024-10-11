@@ -22,13 +22,14 @@ const registerHandler = (io) => {
     console.log('user connection');
 
     //프리즈마로 tower데이터 받아오기
-    const { towers, monsters, stages } = getData();
+    const { towers, monsters, stages, bases } = getData();
 
     //받은 데이터 emit으로 클라이언트에게 보내주기
     socket.emit('datainfo', {
       towers,
       monsters,
       stages,
+      bases,
     });
 
     //접속 후
