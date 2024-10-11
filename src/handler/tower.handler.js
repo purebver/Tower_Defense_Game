@@ -1,7 +1,7 @@
 import { getData } from '../init/data.js';
-import { getStages, useMoney } from '../models/stage.model.js';
+import { getStages, addMoney, useMoney } from '../models/stage.model.js';
 import { deleteTowers, getTowers, setTowers } from '../models/tower.model.js';
-import { gameStartHandler } from './game.handler.js';
+import { baseTowerDelete } from './gold.handler.js';
 
 /**
  * @desc 초기 타워 검증
@@ -154,6 +154,14 @@ export const towerSellHandler = (accountId, data) => {
   if (data.userGold - data.beforeGold !== dbTower.towerCost) {
     return { status: 'fail', message: 'The selling price is strange' };
   }
+
+  let isBaseTowerDelete = false;
+  if (dbTower.towerId === 100) {
+    isBaseTowerDelete = true;
+  }
+
+  addMoney(accountId, dbTower.towerCost);
+  baseTowerDelete(isBaseTowerDelete);
 
   return { status: 'success', message: 'attackTowers' };
 };
