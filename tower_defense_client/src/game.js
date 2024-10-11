@@ -207,6 +207,11 @@ function placeNewTower() {
     afterGold: userGold,
     currentTower: towers,
   });
+  serverSocket.emit('event', {
+    handlerId: 33,
+    tower: tower,
+  });
+  console.log(tower);
 }
 
 function placeBase() {

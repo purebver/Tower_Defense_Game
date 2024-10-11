@@ -51,6 +51,43 @@ export const towerBuyHandler = (accountId, data) => {
 };
 
 /**
+ * @desc 타워 스텟 검증
+ * @author 우종
+ */
+
+export const towerStatsHandler = (accountId, data) => {
+  //현재 타워의 공격력 쿨타임 공격범위가 db의 값과 일치 하는가
+
+  //db의 타워 데이터
+  const { towers } = getData();
+  const tower = data.tower;
+  //db의 타워 데이터
+  const dbTower = towers.find((a) => a.towerId === tower.towerId);
+
+  //dbTower가 undefined인 경우
+  if (!dbTower) {
+    return { status: 'fail', message: 'Tower Not Found in Database' };
+  }
+  //클라이언트에서 가져온 타워 스텟
+  const { attackPower, cooltime, range } = data.tower || {};
+
+  //클라이언트의 타워 스텟이 정의되었는지 확인
+  if (!attackPower || !cooltime || !range) {
+    return { status: 'fail', message: 'Tower Stats undefined' };
+  }
+
+  //타워 스텟 비교
+  if (
+    attackPower !== dbTower.towerAttack ||
+    cooltime !== dbTower.towerSpeed ||
+    range !== dbTower.towerRange
+  ) {
+    return { status: 'fail', message: 'Tower Stats Irregular' };
+  }
+  return { status: 'success', message: 'Tower Erection' };
+};
+
+/**
  * @desc 타워->몬스터 Attack 검즘
  * @author 재영
  */
