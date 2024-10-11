@@ -210,6 +210,11 @@ function placeNewTower() {
     currentTower: towers,
     towerObj: tower
   });
+  serverSocket.emit('event', {
+    handlerId: 33,
+    tower: tower,
+  });
+  console.log(tower);
 }
 
 function placeBase() {
@@ -219,7 +224,14 @@ function placeBase() {
 }
 
 function spawnMonster() {
-  monsters.push(new Monster(monsterPath, monsterImages, monsterLevel));
+  const monsterInfo = monsterData.find((a) => a.monsterId === 300);
+  console.log(monsterInfo);
+  monsters.push(new Monster(monsterPath, monsterImages, monsterInfo));
+
+  serverSocket.emit('event', {
+    handlerId: 10,
+    monster: monsterInfo,
+  });
 }
 
 function gameLoop() {
@@ -278,6 +290,11 @@ function gameLoop() {
       monster.draw(ctx);
     } else {
       /* 몬스터가 죽었을 때 */
+      console.log(monsters[i]);
+      serverSocket.emit('event', {
+        handlerId: 11,
+        monster: monsters[i],
+      });
       monsters.splice(i, 1);
     }
   }
