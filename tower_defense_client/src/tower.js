@@ -1,5 +1,5 @@
 export class Tower {
-  constructor(x, y, cost, attackPower, range, cooltime, towerId) {
+  constructor(x, y, cost, attackPower, range, cooltime, towerId, img) {
     // 생성자 안에서 타워들의 속성을 정의한다고 생각하시면 됩니다!
     this.x = x; // 타워 이미지 x 좌표
     this.y = y; // 타워 이미지 y 좌표
@@ -13,19 +13,37 @@ export class Tower {
     this.beamDuration = 0; // 타워 광선 지속 시간
     this.target = null; // 타워 광선의 목표
     this.towerId = towerId;
+    this.img = new Image();
+    this.img.src = img;
   }
 
-  draw(ctx, towerImage) {
-    ctx.drawImage(towerImage, this.x, this.y, this.width, this.height);
-    if (this.beamDuration > 0 && this.target) {
-      ctx.beginPath();
-      ctx.moveTo(this.x + this.width / 2, this.y + this.height / 2);
-      ctx.lineTo(this.target.x + this.target.width / 2, this.target.y + this.target.height / 2);
-      ctx.strokeStyle = 'skyblue';
-      ctx.lineWidth = 10;
-      ctx.stroke();
-      ctx.closePath();
-      this.beamDuration--;
+  draw(ctx) {
+    if (this.img.complete) {
+      ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+      if (this.beamDuration > 0 && this.target) {
+        ctx.beginPath();
+        ctx.moveTo(this.x + this.width / 2, this.y + this.height / 2);
+        ctx.lineTo(this.target.x + this.target.width / 2, this.target.y + this.target.height / 2);
+        ctx.strokeStyle = 'skyblue';
+        ctx.lineWidth = 10;
+        ctx.stroke();
+        ctx.closePath();
+        this.beamDuration--;
+      }
+    } else {
+      this.img.onload = () => {
+        ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+        if (this.beamDuration > 0 && this.target) {
+          ctx.beginPath();
+          ctx.moveTo(this.x + this.width / 2, this.y + this.height / 2);
+          ctx.lineTo(this.target.x + this.target.width / 2, this.target.y + this.target.height / 2);
+          ctx.strokeStyle = 'skyblue';
+          ctx.lineWidth = 10;
+          ctx.stroke();
+          ctx.closePath();
+          this.beamDuration--;
+        }
+      };
     }
   }
 

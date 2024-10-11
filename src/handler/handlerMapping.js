@@ -1,11 +1,9 @@
-
 import {
   towerAttackHandler,
   towerHandler,
   towerBuyHandler,
   towerStatsHandler,
 } from './tower.handler.js';
-import { monsterKill } from './monster.handler.js';
 import { moveStageHandler } from './stage.handler.js';
 import { monsterSpawn, monsterKill } from './monster.handler.js';
 import { gameStartHandler, gameEndHandler } from './game.handler.js';
