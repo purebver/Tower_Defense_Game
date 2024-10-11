@@ -210,16 +210,18 @@ function gameLoop() {
     if (monster.hp > 0) {
       const isDestroyed = monster.move(base);
       if (isDestroyed) {
-        /* 게임 오버 */
         alert("게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ");
         location.reload();
       }
       monster.draw(ctx);
     } else {
-      // 민석 추가 - 몬스터가 죽었을떄 골드, 점수 획득 및 삭제
+      // 민석 추가 - 몬스터가 죽었을 때 골드, 점수 획득 및 삭제
       userGold += monster.goldReward; // 몬스터가 주는 골드 추가
       score += monster.scoreValue; // 몬스터가 주는 점수 추가
+      console.log(`몬스터 처치! 골드: ${userGold}, 점수: ${score}`);
+      
       monsters.splice(i, 1); // 몬스터 목록에서 제거
+       return { handler: 10 };
     }
   }
 
