@@ -117,7 +117,7 @@ function baseUpgrade() {
       });
 
       console.log('기지 강화 성공');
-      placeBase();
+      // placeBase();
     } else {
       console.log('최대치임');
     }
@@ -259,7 +259,7 @@ function placeBase() {
   base.draw(ctx, baseImage);
   serverSocket.emit('event', {
     handlerId: 35,
-    base: base.maxHp,
+    base: base,
     currentUpgradeIndex: upgradeIndex,
   });
 }
@@ -440,6 +440,7 @@ Promise.all([
     upgradeIndex = data.index;
     userGold = data.gold;
     baseHp = data.hp;
+    placeBase();
   });
 });
 
