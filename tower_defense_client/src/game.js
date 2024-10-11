@@ -12,9 +12,12 @@ const ctx = canvas.getContext('2d');
 
 const NUM_OF_MONSTERS = 5; // 몬스터 개수
 
+let baseMaxHp = [1000, 2000, 4000, 8000, 16000]; //기지 최대 체력
+let upgradeIndex = 0;
+
 let userGold = 5000; // 유저 골드
 let base; // 기지 객체
-let baseHp = 1000; // 기지 체력
+let baseHp = baseMaxHp[upgradeIndex]; // 기지 체력
 
 let towerData = [];
 let monsterData = [];
@@ -169,14 +172,14 @@ function placeInitialTowers() {
 }
 
 function placeNewTower() {
-  const randomTowerId = Math.floor(Math.random() * 5) + 100;
-  const towerInfo = towerData.find((a) => a.towerId === randomTowerId);
+  const upgradeTower = towerData[upgradeIndex].towerId;
+  const towerInfo = towerData.find((a) => a.towerId === upgradeTower);
 
   if (userGold < towerInfo.towerCost) {
     alert('message: 타워 구입에 필요한 금액이 부족합니다.');
     return;
   }
-  console.log('towerNum:', randomTowerId);
+  console.log('towerNum:', upgradeTower);
   let currentGold = userGold;
   userGold -= towerInfo.towerCost;
 
