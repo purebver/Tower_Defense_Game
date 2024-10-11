@@ -284,10 +284,14 @@ function gameLoop() {
       /* 몬스터가 죽었을 때 */
       score += monster.monsterScore;
       userGold += monster.monsterGold;
-      console.log(monsters[i]);
+      console.log(monster);
       serverSocket.emit('event', {
         handlerId: 11,
-        monster: monsters[i],
+        monster: {
+          monsterId: monster.monsterId,
+          monsterScore: monster.monsterScore,
+          monsterGold: monster.monsterGold,
+        },
       });
       monsters.splice(i, 1);
     }

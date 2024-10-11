@@ -1,7 +1,8 @@
 import { prisma } from '../utils/prisma/prisma.client.js';
 import { clearTowers } from '../models/tower.model.js';
-import { clearMonsters } from '../models/monster.model.js';
-import { clearStage, getStages } from '../models/stage.model.js';
+import { clearMonsters, getMonsters } from '../models/monster.model.js';
+import { clearStage } from '../models/stage.model.js';
+import { getData } from '../init/data.js';
 
 export const gameStartHandler = (accountId, data) => {
   clearTowers(accountId);
@@ -13,15 +14,28 @@ export const gameStartHandler = (accountId, data) => {
 
 export const gameEndHandler = async (accountId, payload) => {
   try {
-    // todo: 임의로 지정한 score, 추후 monster 처치로 인한 score가 구현 되면 추가
-    const stageInfo = getStages(accountId);
-    const score = stageInfo.score;
+    // monster 처치 목록으로 유저의 점수 구하기
+    const monsters = getMonsters(accountId);
+    const dbMonsterData = getData().monsters;
 
+    const uniqueMonsterIds = [...new Set(monsters.map((monster) => monster.monsterId))];
+    console.log('uniqueMonsterIds: ', uniqueMonsterIds);
+    let totalScore = 0;
+
+    uniqueMonsterIds.forEach((monsterId) => {
+      const monsterCount = monsters.filter((monster) => monster.monsterId === monsterId).length;
+      const monsterData = dbMonsterData.find((dbMonster) => dbMonster.monsterId === monsterId);
+      if (monsterData) {
+        totalScore += monsterData.monsterScore * monsterCount;
+      }
+    });
+
+    console.log('totalScore: ', totalScore);
     console.log('게임이 종료됩니다.');
 
     // 점수 검증
-    if (score !== payload.score) {
-      //return { status: 'failed', message: 'Score unmatched' };
+    if (totalScore !== payload.score) {
+      return { status: 'failed', message: 'Score unmatched' };
     }
 
     // 유저 정보 검색
@@ -34,20 +48,20 @@ export const gameEndHandler = async (accountId, payload) => {
       data: {
         userId: userInfo.id,
         level: 1, // 임시
-        score,
+        score: totalScore,
         endTime: new Date(),
       },
     });
 
     // 응답 생성
-    const response = { status: 'success', message: '게임 종료', score: score };
+    const response = { status: 'success', message: '게임 종료', score: totalScore };
 
     // 유저 개인 최고 기록 갱신
-    if (userInfo.highScore < score) {
+    if (userInfo.highScore < totalScore) {
       await prisma.user.update({
         where: { id: accountId },
         data: {
-          highScore: score,
+          highScore: totalScore,
         },
       });
       // 응답에 newHighScore 추가

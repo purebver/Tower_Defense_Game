@@ -25,6 +25,10 @@ export const addScore = (accountId, score) => {
   stages[accountId].score += score;
 };
 
+export const addLevel = (accountId, level) => {
+  stages[accountId].level = level;
+};
+
 export const clearStage = (accountId) => {
   stages[accountId] = {
     level: 0,

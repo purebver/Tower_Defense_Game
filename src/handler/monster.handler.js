@@ -49,9 +49,8 @@ export const monsterKill = (accountId, data) => {
   }
 
   // 몬스터의 gold와 score를 추가
-  setMonsters(accountId, data);
+  setMonsters(accountId, data.monster);
   addScore(accountId, dbMonster.monsterScore);
   addMoney(accountId, dbMonster.monsterGold);
-  console.log(getStages(accountId));
   return { status: 'success', message: 'monster killed' };
 };
