@@ -138,3 +138,19 @@ export const towerAttackHandler = (accountId, data) => {
   }
   return { status: 'success', message: 'attackTowers' };
 };
+
+export const towerSellHandler = (accountId, data) => {
+  //타워 db데이터
+  const { towers } = getData();
+  const gettowers = getTowers(accountId);
+  //클라이언트의 타워
+  const towerId = gettowers[data.selectedTowerIndex];
+  //클라이언트의 타워 id와 같은 db타워 검색
+  const dbTower = towers.find((a) => a.towerId === towerId);
+
+  if (data.userGold - data.beforeGold !== dbTower.towerCost) {
+    return { status: 'fail', message: 'The selling price is strange' };
+  }
+
+  return { status: 'success', message: 'attackTowers' };
+};
