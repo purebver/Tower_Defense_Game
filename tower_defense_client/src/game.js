@@ -372,7 +372,7 @@ const buyTowerButton = document.createElement('button');
 buyTowerButton.textContent = '타워 구입';
 buyTowerButton.style.position = 'absolute';
 buyTowerButton.style.top = '10px';
-buyTowerButton.style.right = '10px';
+buyTowerButton.style.right = '350px';
 buyTowerButton.style.padding = '10px 20px';
 buyTowerButton.style.fontSize = '16px';
 buyTowerButton.style.cursor = 'pointer';
@@ -384,8 +384,8 @@ document.body.appendChild(buyTowerButton);
 const sellTowerButton = document.createElement('button');
 sellTowerButton.textContent = '타워 판매';
 sellTowerButton.style.position = 'absolute';
-sellTowerButton.style.top = '50px';
-sellTowerButton.style.right = '10px';
+sellTowerButton.style.top = '10px';
+sellTowerButton.style.right = '180px';
 sellTowerButton.style.padding = '10px 20px';
 sellTowerButton.style.fontSize = '16px';
 sellTowerButton.style.cursor = 'pointer';
@@ -395,3 +395,16 @@ sellTowerButton.addEventListener('click', placeNewTower);
 document.body.appendChild(sellTowerButton);
 
 let selectedTower = null;
+
+const baseUpgradeButton = document.createElement('button');
+baseUpgradeButton.textContent = '기지 강화';
+baseUpgradeButton.style.position = 'absolute';
+baseUpgradeButton.style.top = '10px';
+baseUpgradeButton.style.right = '10px';
+baseUpgradeButton.style.padding = '10px 20px';
+baseUpgradeButton.style.fontSize = '16px';
+baseUpgradeButton.style.cursor = 'pointer';
+
+baseUpgradeButton.addEventListener('click', placeNewTower);
+
+document.body.appendChild(baseUpgradeButton);
