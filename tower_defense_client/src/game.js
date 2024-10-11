@@ -381,6 +381,10 @@ Promise.all([
   });
   serverSocket.on('response', (data) => {
     console.log(data);
+    if (data.error) {
+      alert('오류 발생');
+      location.reload();
+    }
   });
 });
 
