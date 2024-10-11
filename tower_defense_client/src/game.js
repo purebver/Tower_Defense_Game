@@ -20,6 +20,8 @@ let towerData = [];
 let monsterData = [];
 let stageData = [];
 
+let selectedTowerIndex = null; //선택된 타워 index
+
 let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 3; // 초기 타워 개수
 let monsterLevel = 0; // 몬스터 레벨
@@ -169,14 +171,12 @@ function placeInitialTowers() {
 }
 
 function placeNewTower() {
-  const randomTowerId = Math.floor(Math.random() * 5) + 100;
-  const towerInfo = towerData.find((a) => a.towerId === randomTowerId);
+  const towerInfo = towerData.find((a) => a.towerId === 100);
 
   if (userGold < towerInfo.towerCost) {
     alert('message: 타워 구입에 필요한 금액이 부족합니다.');
     return;
   }
-  console.log('towerNum:', randomTowerId);
   let currentGold = userGold;
   userGold -= towerInfo.towerCost;
 
@@ -216,7 +216,11 @@ function placeBase() {
 }
 
 function spawnMonster() {
-  const monsterInfo = monsterData.find((a) => a.monsterId === 300);
+  let monsterId = 300;
+  if (Math.random() < 0.1) {
+    monsterId = 304;
+  }
+  const monsterInfo = monsterData.find((a) => a.monsterId === monsterId);
   console.log(monsterInfo);
   monsters.push(new Monster(monsterPath, monsterImages, monsterInfo));
 
@@ -242,6 +246,9 @@ function gameLoop() {
   ctx.fillText(`현재 레벨: ${monsterLevel}`, 100, 200); // 최고 기록 표시
 
   // 타워 그리기 및 몬스터 공격 처리
+  if (selectedTowerIndex !== null) {
+    drawTowerSelection(selectedTowerIndex);
+  }
   towers.forEach((tower) => {
     tower.draw(ctx);
     tower.updateCooldown();
@@ -392,8 +399,55 @@ sellTowerButton.style.padding = '10px 20px';
 sellTowerButton.style.fontSize = '16px';
 sellTowerButton.style.cursor = 'pointer';
 
-sellTowerButton.addEventListener('click', placeNewTower);
+sellTowerButton.addEventListener('click', () => {
+  sellTower();
+});
 
 document.body.appendChild(sellTowerButton);
 
-let selectedTower = null;
+//타워 선택 및 판매 메서드
+function sellTower() {
+  if (selectedTowerIndex !== null) {
+    const [tower] = towers.splice(selectedTowerIndex, 1);
+    const beforeGold = userGold;
+
+    serverSocket.emit('event', {
+      handlerId: 34,
+      beforeGold,
+      userGold: userGold + tower.cost,
+      selectedTowerIndex,
+    });
+    userGold += tower.cost;
+  }
+  selectedTowerIndex = null;
+}
+
+function drawTowerSelection(index) {
+  const tower = towers[index];
+  ctx.strokeStyle = 'red';
+  ctx.lineWidth = 10;
+  ctx.strokeRect(tower.x + tower.width / 2 - 2.5, tower.y - 15, 10, 10);
+}
+
+function selectTower(x, y, tower) {
+  return x > tower.x && x < tower.x + tower.width && y > tower.y && y < tower.y + tower.height;
+}
+
+canvas.addEventListener('click', (coordinate) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = coordinate.clientX - rect.left;
+  const y = coordinate.clientY - rect.top;
+
+  let boolean = false;
+
+  towers.forEach((tower, index) => {
+    if (selectTower(x, y, tower)) {
+      selectedTowerIndex = index;
+      boolean = true;
+    }
+  });
+
+  if (!boolean) {
+    selectedTowerIndex = null;
+  }
+});
