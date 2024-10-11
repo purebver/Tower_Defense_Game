@@ -171,7 +171,7 @@ function placeInitialTowers() {
     handlerId: 30,
     tower: towers,
     numOfInitialTowers: numOfInitialTowers,
-    towerObj: tower,
+    towerObj: towerInfo.towerId,
   });
 }
 
@@ -207,7 +207,7 @@ function placeNewTower() {
     currentGold: currentGold,
     afterGold: userGold,
     currentTower: towers,
-    towerObj: tower,
+    towerObj: towerInfo.towerId,
   });
   serverSocket.emit('event', {
     handlerId: 33,

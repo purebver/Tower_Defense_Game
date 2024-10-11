@@ -4,14 +4,10 @@ import { clearMonsters, getMonsters } from '../models/monster.model.js';
 import { clearStage } from '../models/stage.model.js';
 import { getData } from '../init/data.js';
 
-import goldCalculate from './gold.handler.js';
-
 export const gameStartHandler = (accountId, data) => {
   clearTowers(accountId);
   clearMonsters(accountId);
   clearStage(accountId);
-
-  goldCalculate();
 
   return { status: 'success', message: 'Game Start' };
 };
