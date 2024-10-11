@@ -11,6 +11,8 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 const NUM_OF_MONSTERS = 5; // 몬스터 개수
+const MIN_MONSTER_ID = 300; // 가장 작은 몬스터 id
+let lastSpawnedMonsterId = MIN_MONSTER_ID; // 마지막에 소환된 몬스터 id
 
 let userGold = 5000; // 유저 골드
 let base; // 기지 객체
@@ -216,14 +218,22 @@ function placeBase() {
 }
 
 function spawnMonster() {
-  let monsterId = 300;
-  if (Math.random() < 0.1) {
-    monsterId = 304;
+  let mobId;
+  if (monsterLevel === 0) {
+    mobId = MIN_MONSTER_ID;
+  } else {
+    // 이전에 생성된 몬스터와 다른 ID를 선택
+    const lowerMobId = MIN_MONSTER_ID + monsterLevel - 1;
+    const higherMobId = MIN_MONSTER_ID + monsterLevel;
+    mobId = lastSpawnedMonsterId === lowerMobId ? higherMobId : lowerMobId;
   }
-  const monsterInfo = monsterData.find((a) => a.monsterId === monsterId);
-  console.log(monsterInfo);
+  lastSpawnedMonsterId = mobId;
+  if (Math.random() < 0.1) {
+    mobId = 304;
+  }
+  const monsterInfo = monsterData.find((a) => a.monsterId === mobId);
+  console.log('monsterInfo: ', monsterInfo);
   monsters.push(new Monster(monsterPath, monsterImages, monsterInfo));
-
   serverSocket.emit('event', {
     handlerId: 10,
     monster: monsterInfo,
@@ -374,6 +384,10 @@ Promise.all([
   });
   serverSocket.on('response', (data) => {
     console.log(data);
+    if (data.error) {
+      alert('오류 발생');
+      location.reload();
+    }
   });
 });
 
