@@ -7,7 +7,7 @@ export const moveStageHandler = async (accountId, payload) => {
     const stageInfo = getData().stages;
     const { nowLevel, nextLevel } = payload;
     const userInfo = getStages(accountId);
-    console.log('stageInfo: ', stageInfo);
+    // console.log('stageInfo: ', stageInfo);
     console.log('userInfo: ', userInfo);
 
     if (userInfo.score < stageInfo[userInfo.level + 1].stageStartScore)
