@@ -10,7 +10,7 @@ export const handlerEvent = async (socket, accountId, data) => {
     socket.emit('response', { status: 'fail', message: 'handler not found' });
   }
 
-  const response = await handler(accountId, data);
+  const response = await handler(accountId, data, socket);
 
   socket.emit('response', response);
 };

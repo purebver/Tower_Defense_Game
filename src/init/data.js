@@ -9,7 +9,7 @@ export const readData = async () => {
     prisma.stage.findMany(),
     prisma.base.findMany(),
   ]);
-  console.log('베이스 로그:', bases);
+
   gameData = { towers, monsters, stages, bases };
   return gameData;
 };

@@ -94,7 +94,12 @@ function initMap() {
   drawPath();
 }
 
-//기지 업그레이드 로직
+/**
+ * @desc 기지 강화 로직
+ * @author 우종
+ * @abstract 기지 강화 버튼을 누르면 upgradeIndex를 +1 해줌 upgradeIndex를 타워랑 공유하여 기지 레벨이 오르면 타워 레벨도 ++
+ */
+
 function baseUpgrade() {
   //[0,1000,2000,4000,8000]
   let baseMaxHp = baseData[upgradeIndex].baseHp; //기지 최대 체력
@@ -103,11 +108,16 @@ function baseUpgrade() {
 
   if (userGold >= baseData[upgradeIndex].baseUpgradeCost) {
     if (upgradeIndex < baseData.length - 1) {
-      upgradeIndex++;
-      userGold -= baseData[upgradeIndex].baseUpgradeCost;
-      baseHp += baseMaxHp; // 기지 체력에 추가
+      serverSocket.emit('event', {
+        handlerId: 35,
+        currentUpgradeIndex: upgradeIndex, //현재 강화 단계
+        currentGold: userGold, //현재 골드
+
+        base: base,
+      });
+
       console.log('기지 강화 성공');
-      placeBase();
+      // placeBase();
     } else {
       console.log('최대치임');
     }
@@ -247,6 +257,11 @@ function placeBase() {
   const lastPoint = monsterPath[monsterPath.length - 1];
   base = new Base(lastPoint.x, lastPoint.y, baseHp);
   base.draw(ctx, baseImage);
+  serverSocket.emit('event', {
+    handlerId: 35,
+    base: base,
+    currentUpgradeIndex: upgradeIndex,
+  });
 }
 
 function spawnMonster() {
@@ -420,6 +435,12 @@ Promise.all([
       alert('오류 발생');
       location.reload();
     }
+  });
+  serverSocket.on('base', (data) => {
+    upgradeIndex = data.index;
+    userGold = data.gold;
+    baseHp = data.hp;
+    placeBase();
   });
 });
 

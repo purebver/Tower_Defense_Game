@@ -3,6 +3,8 @@ import { handleConnection, handleDisconnect, handlerEvent } from './handler.even
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { addUser } from '../models/user.model.js';
+import { createBase } from '../models/base.model.js';
+
 dotenv.config();
 
 const registerHandler = (io) => {
@@ -19,6 +21,8 @@ const registerHandler = (io) => {
       addUser({ accountId, socketId: socket.id });
 
       console.log('user connection');
+      //setBase
+      createBase(accountId);
 
       //프리즈마로 tower데이터 받아오기
       const { towers, monsters, stages, bases } = getData();
