@@ -12,7 +12,7 @@ const ctx = canvas.getContext('2d');
 
 const NUM_OF_MONSTERS = 5; // 몬스터 개수
 
-let userGold = 1000000; // 유저 골드
+let userGold = 0; // 유저 골드
 let base; // 기지 객체
 let baseHp = 0; // 기지 체력
 
@@ -23,7 +23,7 @@ let stageData = [];
 let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 3; // 초기 타워 개수
 let monsterLevel = 0; // 몬스터 레벨
-let monsterSpawnInterval = 5000; // 몬스터 생성 주기
+let monsterSpawnInterval = 1000; // 몬스터 생성 주기
 
 const monsters = [];
 const towers = [];
@@ -171,7 +171,7 @@ function placeInitialTowers() {
     handlerId: 30,
     tower: towers,
     numOfInitialTowers: numOfInitialTowers,
-    towerObj: tower,
+    towerObj: towerInfo.towerId,
   });
 }
 
@@ -207,7 +207,7 @@ function placeNewTower() {
     currentGold: currentGold,
     afterGold: userGold,
     currentTower: towers,
-    towerObj: tower,
+    towerObj: towerInfo.towerId,
   });
   serverSocket.emit('event', {
     handlerId: 33,
@@ -291,9 +291,14 @@ function gameLoop() {
       /* 몬스터가 죽었을 때 */
       userGold += monster.monsterGold; // 몬스터가 주는 골드 추가
       score += monster.monsterScore; // 몬스터가 주는 점수 추가
+      console.log(monster);
       serverSocket.emit('event', {
         handlerId: 11,
-        monster: monsters[i],
+        monster: {
+          monsterId: monster.monsterId,
+          monsterScore: monster.monsterScore,
+          monsterGold: monster.monsterGold,
+        },
       });
       monsters.splice(i, 1);
     }
@@ -312,7 +317,6 @@ function gameLoop() {
       console.log('level up');
     }
   }
-  score += 2;
 
   requestAnimationFrame(gameLoop); // 지속적으로 다음 프레임에 gameLoop 함수 호출할 수 있도록 함
 }

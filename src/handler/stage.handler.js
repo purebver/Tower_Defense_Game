@@ -1,21 +1,44 @@
 import { getData } from '../init/data.js';
-import { getStages } from '../models/stage.model.js';
+import { getMonsters } from '../models/monster.model.js';
+import { addLevel, getStages } from '../models/stage.model.js';
 
 export const moveStageHandler = async (accountId, payload) => {
   try {
-    // 점수를 검증해야 하는데
     const stageInfo = getData().stages;
+    const dbMonsterData = getData().monsters;
+    let monsters = getMonsters(accountId);
+
     const { nowLevel, nextLevel } = payload;
     const userInfo = getStages(accountId);
-    // console.log('stageInfo: ', stageInfo);
-    console.log('userInfo: ', userInfo);
+
+    if (userInfo.level !== nowLevel) {
+      return { status: 'fail', message: 'level not match' };
+    }
 
     if (userInfo.score < stageInfo[userInfo.level + 1].stageStartScore)
-      return { status: 'fail', message: 'level not match' };
+      return { status: 'fail', message: 'level up score not match' };
 
-    /*
-    유저의 점수를 구해
-    */
+    // monster 처치 목록으로 유저의 점수 구하기
+    const uniqueMonsterIds = [...new Set(monsters.map((monster) => monster.monsterId))];
+    console.log('uniqueMonsterIds: ', uniqueMonsterIds);
+    let totalScore = 0;
+
+    uniqueMonsterIds.forEach((monsterId) => {
+      const monsterCount = monsters.filter((monster) => monster.monsterId === monsterId).length;
+      const monsterData = dbMonsterData.find((dbMonster) => dbMonster.monsterId === monsterId);
+      if (monsterData) {
+        totalScore += monsterData.monsterScore * monsterCount;
+      }
+    });
+
+    console.log('totalScore: ', totalScore);
+
+    // 유저의 총 점수가 다음 스테이지 점수에 도달하지 못했다면
+    if (totalScore < stageInfo[userInfo.level + 1].stageStartScore) {
+      return { status: 'fail', message: 'lack of score' };
+    }
+
+    addLevel(accountId, nextLevel + 1);
     const response = { status: 'success', message: 'level up' };
     return response;
   } catch (e) {
