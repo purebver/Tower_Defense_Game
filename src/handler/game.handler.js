@@ -1,10 +1,12 @@
 import { prisma } from '../utils/prisma/prisma.client.js';
 import { clearTowers } from '../models/tower.model.js';
 import { clearMonsters } from '../models/monster.model.js';
+import { clearStage, getStages } from '../models/stage.model.js';
 
 export const gameStartHandler = (accountId, data) => {
   clearTowers(accountId);
   clearMonsters(accountId);
+  clearStage(accountId);
 
   return { status: 'success', message: 'Game Start' };
 };
@@ -12,7 +14,8 @@ export const gameStartHandler = (accountId, data) => {
 export const gameEndHandler = async (accountId, payload) => {
   try {
     // todo: 임의로 지정한 score, 추후 monster 처치로 인한 score가 구현 되면 추가
-    let score = 100;
+    const stageInfo = getStages(accountId);
+    const score = stageInfo.score;
 
     console.log('게임이 종료됩니다.');
 

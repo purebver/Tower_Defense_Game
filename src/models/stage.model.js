@@ -24,3 +24,11 @@ export const useMoney = (accountId, money) => {
 export const addScore = (accountId, score) => {
   stages[accountId].score += score;
 };
+
+export const clearStage = (accountId) => {
+  stages[accountId] = {
+    level: 0,
+    money: 0, // 처음 돈은 어떻게 결정할 예정?
+    score: 0,
+  };
+};

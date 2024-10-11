@@ -1,5 +1,6 @@
 import { getData } from '../init/data.js';
 import { getMonsters, setMonsters } from '../models/monster.model.js';
+import { addMoney, addScore, getStages } from '../models/stage.model.js';
 // 몬스터 스폰 검증
 export const monsterSpawn = (accountId, data) => {
   const { monsters } = getData();
@@ -33,7 +34,7 @@ export const monsterKill = (accountId, data) => {
 
   //죽인 몬스터 배열
   const monsterArr = getMonsters(accountId);
-  console.log('hi:' + dbMonster.monsterScore);
+
   // 몬스터 스코어 검증
   if (monster.monsterScore !== dbMonster.monsterScore) {
     return { status: 'fail', message: 'monsterScore Is Strange' };
@@ -43,6 +44,14 @@ export const monsterKill = (accountId, data) => {
     return { status: 'fail', message: 'monster not found' };
   }
 
+  if (!dbMonster) {
+    return { status: 'fail', message: 'invalid monster id' };
+  }
+
+  // 몬스터의 gold와 score를 추가
   setMonsters(accountId, data);
+  addScore(accountId, dbMonster.monsterScore);
+  addMoney(accountId, dbMonster.monsterGold);
+  console.log(getStages(accountId));
   return { status: 'success', message: 'monster killed' };
 };
