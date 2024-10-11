@@ -2,6 +2,7 @@ import express from 'express';
 import { createServer } from 'http';
 import initSocket from './init/socket.js';
 import UserRouter from './routes/user.router.js';
+import RankRouter from './routes/rank.router.js';
 import cors from 'cors';
 import { readData } from './init/data.js';
 
@@ -16,7 +17,7 @@ app.use(
   }),
 );
 app.use(express.json());
-app.use('/api', [UserRouter]);
+app.use('/api', [UserRouter, RankRouter]);
 
 initSocket(server);
 
