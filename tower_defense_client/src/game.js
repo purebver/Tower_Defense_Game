@@ -100,14 +100,19 @@ function baseUpgrade() {
   let baseMaxHp = baseData[upgradeIndex].baseHp; //기지 최대 체력
   console.log('기지ID', baseMaxHp);
   //업그레이드 가능 여부 체크
-  if (upgradeIndex < baseData.length - 1) {
-    upgradeIndex++;
-    userGold -= baseData[upgradeIndex].baseUpgradeCost;
-    baseHp += baseMaxHp; // 기지 체력에 추가
-    console.log('기지 강화 성공');
-    placeBase();
+
+  if (userGold >= baseData[upgradeIndex].baseUpgradeCost) {
+    if (upgradeIndex < baseData.length - 1) {
+      upgradeIndex++;
+      userGold -= baseData[upgradeIndex].baseUpgradeCost;
+      baseHp += baseMaxHp; // 기지 체력에 추가
+      console.log('기지 강화 성공');
+      placeBase();
+    } else {
+      console.log('최대치임');
+    }
   } else {
-    console.log('최대치임');
+    console.log('돈없음');
   }
 }
 
@@ -195,20 +200,16 @@ function placeInitialTowers() {
 }
 
 function placeNewTower() {
-
   const upgradeTower = towerData[upgradeIndex].towerId;
   const towerInfo = towerData.find((a) => a.towerId === upgradeTower);
   console.log('타워번호', upgradeTower);
 
-  const towerInfo = towerData.find((a) => a.towerId === 100);
-
-
   if (userGold < towerInfo.towerCost) {
     alert('message: 타워 구입에 필요한 금액이 부족합니다.');
     return;
+  }
 
   console.log('towerNum:', upgradeTower);
-
 
   let currentGold = userGold;
   userGold -= towerInfo.towerCost;
@@ -452,7 +453,6 @@ sellTowerButton.addEventListener('click', () => {
 
 document.body.appendChild(sellTowerButton);
 
-
 let selectedTower = null;
 
 const baseUpgradeButton = document.createElement('button');
@@ -513,4 +513,3 @@ canvas.addEventListener('click', (coordinate) => {
     selectedTowerIndex = null;
   }
 });
-
