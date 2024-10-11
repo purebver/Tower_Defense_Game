@@ -3,6 +3,7 @@ import {
   towerHandler,
   towerBuyHandler,
   towerStatsHandler,
+  towerSellHandler,
 } from './tower.handler.js';
 import { moveStageHandler } from './stage.handler.js';
 import { monsterSpawn, monsterKill } from './monster.handler.js';
@@ -18,6 +19,7 @@ const handlerMappings = {
   31: towerAttackHandler,
   32: towerBuyHandler,
   33: towerStatsHandler,
+  34: towerSellHandler,
 };
 
 export default handlerMappings;

@@ -1,7 +1,7 @@
 import { getData } from '../init/data.js';
 import { getStages, useMoney } from '../models/stage.model.js';
-import { getTowers, setTowers } from '../models/tower.model.js';
-import goldCalculate from './gold.handler.js';
+import { deleteTowers, getTowers, setTowers } from '../models/tower.model.js';
+import { gameStartHandler } from './game.handler.js';
 
 /**
  * @desc 초기 타워 검증
@@ -56,9 +56,9 @@ export const towerBuyHandler = (accountId, data) => {
   //타워 구매시 타워가 구매한 만큼만 추가되었는지 검증
   const getTower = getTowers(accountId);
   //getTower의 값이 undefined인 경우 에러처리
-  if (!Array.isArray(getTower) || getTower.length === 0) {
-    return { status: 'fail', message: 'Tower is Not Found' };
-  }
+  // if (!Array.isArray(getTower) || getTower.length === 0) {
+  //   return { status: 'fail', message: 'Tower is Not Found' };
+  // }
   // console.log('getTower', getTower);
   if (data.currentTower.length - 1 !== getTower.length) {
     return { status: 'fail', message: 'The Number of Towers Is Strange.' };
@@ -67,8 +67,6 @@ export const towerBuyHandler = (accountId, data) => {
   setTowers(accountId, data.towerObj);
 
   useMoney(accountId, towerPrice);
-
-  goldCalculate(getTowers(accountId));
 
   return { status: 'success', message: 'Tower Purchase Success' };
 };
@@ -139,5 +137,23 @@ export const towerAttackHandler = (accountId, data) => {
   if (lostHp !== dbTower.towerAttack) {
     return { status: 'fail', message: 'monster lost Hp' };
   }
+  return { status: 'success', message: 'attackTowers' };
+};
+
+export const towerSellHandler = (accountId, data) => {
+  //타워 db데이터
+  const { towers } = getData();
+  const gettowers = getTowers(accountId);
+  //클라이언트의 타워
+  const towerId = gettowers[data.selectedTowerIndex];
+  //클라이언트의 타워 id와 같은 db타워 검색
+  const dbTower = towers.find((a) => a.towerId === towerId);
+
+  deleteTowers(accountId, data.selectedTowerIndex);
+
+  if (data.userGold - data.beforeGold !== dbTower.towerCost) {
+    return { status: 'fail', message: 'The selling price is strange' };
+  }
+
   return { status: 'success', message: 'attackTowers' };
 };
