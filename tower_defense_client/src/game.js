@@ -289,8 +289,8 @@ function gameLoop() {
       monster.draw(ctx);
     } else {
       /* 몬스터가 죽었을 때 */
-      score += monster.monsterScore;
-      userGold += monster.monsterGold;
+      userGold += monster.monsterGold; // 몬스터가 주는 골드 추가
+      score += monster.monsterScore; // 몬스터가 주는 점수 추가
       console.log(monster);
       serverSocket.emit('event', {
         handlerId: 11,
