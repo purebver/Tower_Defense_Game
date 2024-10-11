@@ -1,7 +1,6 @@
 import { getData } from '../init/data.js';
 import { getStages, useMoney } from '../models/stage.model.js';
 import { getTowers, setTowers } from '../models/tower.model.js';
-import goldCalculate from './gold.handler.js';
 
 /**
  * @desc 초기 타워 검증
@@ -67,8 +66,6 @@ export const towerBuyHandler = (accountId, data) => {
   setTowers(accountId, data.towerObj);
 
   useMoney(accountId, towerPrice);
-
-  goldCalculate(getTowers(accountId));
 
   return { status: 'success', message: 'Tower Purchase Success' };
 };
@@ -139,5 +136,21 @@ export const towerAttackHandler = (accountId, data) => {
   if (lostHp !== dbTower.towerAttack) {
     return { status: 'fail', message: 'monster lost Hp' };
   }
+  return { status: 'success', message: 'attackTowers' };
+};
+
+export const towerSellHandler = (accountId, data) => {
+  //타워 db데이터
+  const { towers } = getData();
+  const gettowers = getTowers(accountId);
+  //클라이언트의 타워
+  const towerId = gettowers[data.selectedTowerIndex];
+  //클라이언트의 타워 id와 같은 db타워 검색
+  const dbTower = towers.find((a) => a.towerId === towerId);
+
+  if (data.userGold - data.beforeGold !== dbTower.towerCost) {
+    return { status: 'fail', message: 'The selling price is strange' };
+  }
+
   return { status: 'success', message: 'attackTowers' };
 };
