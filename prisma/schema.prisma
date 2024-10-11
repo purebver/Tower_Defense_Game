@@ -52,8 +52,17 @@ model Monster {
   level             Int       @default(1)         // 몬스터 초기 레벨
   monsterHp         Int       @default(50)        // 몬스터 HP
   monsterAttack     Int       @default(10)        // 몬스터 공격력
+  monsterMoveSpeed     Int       @default(10)        // 몬스터 이동속도
   monsterGold       Int                           // 몬스터를 죽이면 얻는 골드
   monsterScore      Int                           // 몬스터 죽였을 때 얻는 점수
   spawnTime         Int       @default(10000)     // 생성 주기, 10초마다 생성
   img               String                        // 몬스터의 이미지 파일 경로
+}
+
+model Base {
+  baseId         Int       @id                 // 베이스 ID
+  baselevel             Int       @default(1)         // 베이스 초기 레벨
+  baseHp         Int       @default(200)        // 베이스 HP
+  baseUpgradeCost     Int       @default(1000)        // 베이스 강화 비용
+  img               String                        // 베이스 이미지 파일 경로
 }

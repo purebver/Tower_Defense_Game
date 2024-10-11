@@ -10,7 +10,7 @@ let serverSocket; // 서버 웹소켓 객체
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-const NUM_OF_MONSTERS = 5; // 몬스터 개수
+// const NUM_OF_MONSTERS = 5; // 몬스터 개수
 const MIN_MONSTER_ID = 300; // 가장 작은 몬스터 id
 let lastSpawnedMonsterId = MIN_MONSTER_ID; // 마지막에 소환된 몬스터 id
 
@@ -46,12 +46,12 @@ baseImage.src = 'images/base.png';
 const pathImage = new Image();
 pathImage.src = 'images/path.png';
 
-const monsterImages = [];
-for (let i = 1; i <= NUM_OF_MONSTERS; i++) {
-  const img = new Image();
-  img.src = `images/monster${i}.png`;
-  monsterImages.push(img);
-}
+// const monsterImages = [];
+// for (let i = 1; i <= NUM_OF_MONSTERS; i++) {
+//   const img = new Image();
+//   img.src = `images/monster${i}.png`;
+//   monsterImages.push(img);
+// }
 
 let monsterPath;
 
@@ -229,11 +229,11 @@ function spawnMonster() {
   }
   lastSpawnedMonsterId = mobId;
   if (Math.random() < 0.1) {
-    mobId = 304;
+    mobId = 400 + monsterLevel;
   }
   const monsterInfo = monsterData.find((a) => a.monsterId === mobId);
   console.log('monsterInfo: ', monsterInfo);
-  monsters.push(new Monster(monsterPath, monsterImages, monsterInfo));
+  monsters.push(new Monster(monsterPath, monsterInfo));
   serverSocket.emit('event', {
     handlerId: 10,
     monster: monsterInfo,
@@ -321,7 +321,6 @@ function gameLoop() {
   if (stageData[monsterLevel + 1]) {
     // 다음 스테이지로 넘어갈 점수가 달성됐다면
     if (score > stageData[monsterLevel + 1].stageStartScore) {
-      console.log('=============userGold: ', userGold);
       serverSocket.emit('event', {
         handlerId: 21,
         nowLevel: monsterLevel,
