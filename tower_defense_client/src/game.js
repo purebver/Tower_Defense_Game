@@ -12,12 +12,26 @@ const ctx = canvas.getContext('2d');
 
 const NUM_OF_MONSTERS = 5; // 몬스터 개수
 
-let baseMaxHp = [1000, 2000, 4000, 8000, 16000]; //기지 최대 체력
-let upgradeIndex = 0;
+let baseMaxHp = [0, 1000, 2000, 4000, 8000]; //기지 최대 체력
+let upgradeIndex = 0; //기지 강화 수치 초기값
 
 let userGold = 5000; // 유저 골드
 let base; // 기지 객체
-let baseHp = baseMaxHp[upgradeIndex]; // 기지 체력
+let firstHp = 1000; // 시작시 초기 체력
+let baseHp = firstHp; // 기지 체력
+
+//기지 업그레이드 로직
+function baseUpgrade() {
+  //업그레이드 가능 여부 체크
+  if (upgradeIndex < baseMaxHp.length - 1) {
+    upgradeIndex++;
+    baseHp += baseMaxHp[upgradeIndex]; // 기지 체력에 추가
+    console.log('기지 강화 성공');
+    placeBase();
+  } else {
+    console.log('최대치임');
+  }
+}
 
 let towerData = [];
 let monsterData = [];
@@ -171,9 +185,10 @@ function placeInitialTowers() {
   });
 }
 
-function placeNewTower() {
+async function placeNewTower() {
   const upgradeTower = towerData[upgradeIndex].towerId;
-  const towerInfo = towerData.find((a) => a.towerId === upgradeTower);
+  const towerInfo = await towerData.find((a) => a.towerId === upgradeTower);
+  console.log('타워번호', upgradeTower);
 
   if (userGold < towerInfo.towerCost) {
     alert('message: 타워 구입에 필요한 금액이 부족합니다.');
@@ -408,6 +423,6 @@ baseUpgradeButton.style.padding = '10px 20px';
 baseUpgradeButton.style.fontSize = '16px';
 baseUpgradeButton.style.cursor = 'pointer';
 
-baseUpgradeButton.addEventListener('click', placeNewTower);
+baseUpgradeButton.addEventListener('click', baseUpgrade);
 
 document.body.appendChild(baseUpgradeButton);
