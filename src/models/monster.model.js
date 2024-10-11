@@ -13,8 +13,7 @@ export const getMonsters = (accountId) => {
 
 //몬스터 세팅
 export const setMonsters = (accountId, monstersdata) => {
-  console.log(`setMonster`);
-  return monsters[accountId].push({ monstersdata });
+  return monsters[accountId].push(monstersdata);
 };
 
 //몬스터 배열 비우기

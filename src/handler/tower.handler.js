@@ -1,4 +1,5 @@
 import { getData } from '../init/data.js';
+import { getStages, useMoney } from '../models/stage.model.js';
 import { getTowers, setTowers } from '../models/tower.model.js';
 import goldCalculate from './gold.handler.js'
 
@@ -21,7 +22,7 @@ export const towerHandler = (accountId, data) => {
   }
   //console.log('towerHandler: ', data.tower);
 
-  for(let i=0; i<startTower; i++) {
+  for (let i = 0; i < startTower; i++) {
     setTowers(accountId, data.towerObj);
   }
   // console.log('tower', data.tower);
@@ -35,9 +36,19 @@ export const towerHandler = (accountId, data) => {
 export const towerBuyHandler = (accountId, data) => {
   //db의 타워
   const { towers } = getData();
+  const stageInfo = getStages(accountId);
+
   //클라이언트의 타워
   const tower = data.currentTower[data.currentTower.length - 1];
   const towerPrice = towers.find((a) => a.towerId === tower.towerId).towerCost;
+
+  // 골드 검증
+  console.log('towerPrice: ', towerPrice);
+  if (stageInfo.money < towerPrice) {
+    console.log('돈부족');
+    return { status: 'fail', message: 'lack of money' };
+  }
+
   //타워구매시 골드 차감됬는지 검증
   if (data.currentGold - towerPrice !== data.afterGold) {
     return { status: 'fail', message: 'It s not your money' };
@@ -54,7 +65,12 @@ export const towerBuyHandler = (accountId, data) => {
   }
 
   setTowers(accountId, data.towerObj);
+
+  useMoney(accountId, towerPrice);
+  setTowers(accountId, data.currentTower);
+
   goldCalculate(getTowers(accountId));
+
   return { status: 'success', message: 'Tower Purchase Success' };
 };
 

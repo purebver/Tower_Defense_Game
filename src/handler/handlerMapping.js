@@ -14,7 +14,6 @@ const handlerMappings = {
   10: monsterSpawn,
   11: monsterKill,
   21: moveStageHandler,
-  // 20: stage 관련 핸들러,
   30: towerHandler,
   31: towerAttackHandler,
   32: towerBuyHandler,
