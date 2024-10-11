@@ -37,6 +37,10 @@ export const towerBuyHandler = (accountId, data) => {
   }
   //타워 구매시 타워가 구매한 만큼만 추가되었는지 검증
   const getTower = getTowers(accountId);
+  //getTower의 값이 undefined인 경우 에러처리
+  if (!Array.isArray(getTower) || getTower.length === 0) {
+    return { status: 'fail', message: 'Tower is Not Found' };
+  }
   // console.log('getTower', getTower);
   if (data.currentTower.length - 1 !== getTower[getTower.length - 1].length) {
     return { status: 'fail', message: 'The Number of Towers Is Strange.' };
