@@ -2,9 +2,13 @@ import { prisma } from '../utils/prisma/prisma.client.js';
 import { clearTowers } from '../models/tower.model.js';
 import { clearMonsters } from '../models/monster.model.js';
 
+import goldCalculate from './gold.handler.js';
+
 export const gameStartHandler = (accountId, data) => {
   clearTowers(accountId);
   clearMonsters(accountId);
+
+  goldCalculate();
 
   return { status: 'success', message: 'Game Start' };
 };

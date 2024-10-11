@@ -154,9 +154,10 @@ function placeInitialTowers() {
   const towerInfo = towerData.find((a) => a.towerId === 100);
   console.log('towerInfo 연결', towerInfo);
 
+  let tower;
   for (let i = 0; i < numOfInitialTowers; i++) {
     const { x, y } = getRandomPositionNearPath(0);
-    const tower = new Tower(
+    tower = new Tower(
       x,
       y,
       towerInfo.towerCost,
@@ -172,6 +173,7 @@ function placeInitialTowers() {
     handlerId: 30,
     tower: towers,
     numOfInitialTowers: numOfInitialTowers,
+    towerObj: tower
   });
 }
 
@@ -206,6 +208,7 @@ function placeNewTower() {
     currentGold: currentGold,
     afterGold: userGold,
     currentTower: towers,
+    towerObj: tower
   });
   serverSocket.emit('event', {
     handlerId: 33,
