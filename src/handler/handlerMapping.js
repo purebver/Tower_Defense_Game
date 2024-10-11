@@ -6,7 +6,6 @@ import { gameStartHandler, gameEndHandler } from './game.handler.js';
 const handlerMappings = {
   1: gameStartHandler,
   2: gameEndHandler,
-  21: moveStageHandler,
   10: monsterSpawn,
   11: monsterKill,
   21: moveStageHandler,
