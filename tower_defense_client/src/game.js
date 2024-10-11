@@ -23,7 +23,7 @@ let stageData = [];
 let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 3; // 초기 타워 개수
 let monsterLevel = 0; // 몬스터 레벨
-let monsterSpawnInterval = 500; // 몬스터 생성 주기
+let monsterSpawnInterval = 2000; // 몬스터 생성 주기
 
 const monsters = [];
 const towers = [];
@@ -304,10 +304,12 @@ function gameLoop() {
   if (stageData[monsterLevel + 1]) {
     // 다음 스테이지로 넘어갈 점수가 달성됐다면
     if (score > stageData[monsterLevel + 1].stageStartScore) {
+      console.log('=============userGold: ', userGold);
       serverSocket.emit('event', {
         handlerId: 21,
         nowLevel: monsterLevel,
         nextLevel: monsterLevel + 1,
+        clientUserGold: userGold,
       });
       monsterLevel += 1;
       console.log('level up');

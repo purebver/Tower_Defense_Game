@@ -1,6 +1,8 @@
 import { getData } from '../init/data.js';
 import { getMonsters } from '../models/monster.model.js';
 import { addLevel, getStages } from '../models/stage.model.js';
+import { getTowers } from '../models/tower.model.js';
+import goldCalculate from './gold.handler.js';
 
 export const moveStageHandler = async (accountId, payload) => {
   try {
@@ -10,6 +12,7 @@ export const moveStageHandler = async (accountId, payload) => {
 
     const { nowLevel, nextLevel } = payload;
     const userInfo = getStages(accountId);
+    console.log('test: ', userInfo);
 
     if (userInfo.level !== nowLevel) {
       return { status: 'fail', message: 'level not match' };
@@ -22,23 +25,29 @@ export const moveStageHandler = async (accountId, payload) => {
     const uniqueMonsterIds = [...new Set(monsters.map((monster) => monster.monsterId))];
     console.log('uniqueMonsterIds: ', uniqueMonsterIds);
     let totalScore = 0;
+    let totalGold = 0;
 
     uniqueMonsterIds.forEach((monsterId) => {
       const monsterCount = monsters.filter((monster) => monster.monsterId === monsterId).length;
       const monsterData = dbMonsterData.find((dbMonster) => dbMonster.monsterId === monsterId);
       if (monsterData) {
         totalScore += monsterData.monsterScore * monsterCount;
+        totalGold += monsterData.monsterGold * monsterCount;
       }
     });
 
-    console.log('totalScore: ', totalScore);
+    const clientGold = payload.clientUserGold;
+    const serverGold = goldCalculate(getTowers(accountId), totalGold);
+    if (clientGold !== serverGold) {
+      return { status: 'fail', message: 'Gold on the client and server is different.' };
+    }
 
     // 유저의 총 점수가 다음 스테이지 점수에 도달하지 못했다면
     if (totalScore < stageInfo[userInfo.level + 1].stageStartScore) {
       return { status: 'fail', message: 'lack of score' };
     }
 
-    addLevel(accountId, nextLevel + 1);
+    addLevel(accountId, nextLevel);
     const response = { status: 'success', message: 'level up' };
     return response;
   } catch (e) {
