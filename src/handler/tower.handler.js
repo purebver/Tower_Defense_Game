@@ -1,5 +1,6 @@
 import { getData } from '../init/data.js';
 import { getTowers, setTowers } from '../models/tower.model.js';
+import goldCalculate from './gold.handler.js'
 
 /**
  * @desc 초기 타워 검증
@@ -18,7 +19,7 @@ export const towerHandler = (accountId, data) => {
   if (currentTower.length !== startTower) {
     return { status: 'fail', message: 'Start Tower Over' };
   }
-  console.log('towerHandler: ', data.tower);
+  //console.log('towerHandler: ', data.tower);
 
   for(let i=0; i<startTower; i++) {
     setTowers(accountId, data.towerObj);
@@ -53,6 +54,7 @@ export const towerBuyHandler = (accountId, data) => {
   }
 
   setTowers(accountId, data.towerObj);
+  goldCalculate(getTowers(accountId));
   return { status: 'success', message: 'Tower Purchase Success' };
 };
 
