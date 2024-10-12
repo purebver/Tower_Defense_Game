@@ -1,3 +1,4 @@
+/*메인 페이지*/
 body.index-body {
   display: flex;
   justify-content: center;
@@ -9,7 +10,7 @@ body.index-body {
   margin: 0;
   background-color: #aa2626; /* 배경색 */
   background-image: url('/images/Tower_defense_background_img.png');
-  background-size: contain; /* 이미지가 화면을 꽉 채우도록 설정 */
+  background-size: cover; /* 이미지가 화면을 꽉 채우도록 설정 */
   background-position: center; /* 이미지 위치 중앙 */
   background-repeat: no-repeat; /* 이미지 반복 방지 */
 }
@@ -48,4 +49,29 @@ body.index-body {
 .button-container button:hover {
   background-color: #ddd; /* 마우스 오버 시 배경색 변화 */
   transform: scale(1.05); /* 마우스 오버 시 버튼 크기 약간 증가 */
+}
+
+/* 애니메이션 정의 */
+@keyframes flyIn {
+  0% {
+    transform: translateY(-500%); /* 시작 위치: 화면 위쪽 */
+    opacity: 0; /* 시작 투명도 */
+  }
+  50% {
+    transform: translateY(200px); /* 중간 위치: 아래로 이동 */
+    opacity: 1; /* 중간 투명도: 불투명 */
+  }
+  100% {
+    transform: translateY(0); /* 최종 위치: 원래 위치 */
+    opacity: 1; /* 최종 투명도: 불투명 */
+  }
+}
+
+/* 제목 스타일 */
+.button-container h1 {
+  font-size: 3rem; /* 글자 크기 조정 */
+  color: #ffcc00; /* 눈에 띄는 색상 */
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7); /* 그림자 효과 */
+  margin-bottom: 20px; /* 버튼과의 간격 조정 */
+  animation: flyIn 1s ease-out; /* 애니메이션 적용 */
 }
