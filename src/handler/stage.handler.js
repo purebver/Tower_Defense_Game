@@ -3,6 +3,7 @@ import { getMonsters } from '../models/monster.model.js';
 import { setLevel, getStages } from '../models/stage.model.js';
 import { getTowers } from '../models/tower.model.js';
 import { goldCalculate } from './gold.handler.js';
+import { getBaseUpgrade } from '../models/base.model.js';
 
 export const moveStageHandler = async (accountId, payload) => {
   try {
@@ -37,7 +38,8 @@ export const moveStageHandler = async (accountId, payload) => {
     });
 
     const clientGold = payload.clientUserGold;
-    const serverGold = goldCalculate(getTowers(accountId), totalGold);
+    const baseUpgrade = getBaseUpgrade(accountId);
+    const serverGold = goldCalculate(getTowers(accountId), totalGold, baseUpgrade);
     console.log('clientGold: ', clientGold);
     console.log('serverGold: ', serverGold);
     if (clientGold !== serverGold) {

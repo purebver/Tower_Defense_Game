@@ -11,7 +11,7 @@ export const baseTowerDelete = async (isDelete) => {
   }
 };
 
-export const goldCalculate = (currentTower, monsterGold) => {
+export const goldCalculate = (currentTower, monsterGold, baseUpgradeArr) => {
   let totalGold = 0;
   // 구매한 타워 총 가격
   let totalTowerGold = 0;
@@ -23,7 +23,14 @@ export const goldCalculate = (currentTower, monsterGold) => {
     totalTowerGold += towerInfo.towerCost;
   }
 
-  totalGold = moneyBase + monsterGold - totalTowerGold + baseTowerCost;
+  // 기지 업그레이드 가격
+  let totalBaseGole = 0;
+  for (let i = 1; i < baseUpgradeArr.length; i++) {
+    const baseInfo = getData().bases.find((a) => a.baselevel === baseUpgradeArr[i]);
+    totalBaseGole += baseInfo.baseUpgradeCost;
+  }
+
+  totalGold = moneyBase + monsterGold - totalTowerGold + baseTowerCost - totalBaseGole;
 
   return totalGold;
 };
