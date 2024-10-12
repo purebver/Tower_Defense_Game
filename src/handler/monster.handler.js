@@ -1,6 +1,6 @@
 import { getData } from '../init/data.js';
-import { getMonsters, setMonsters } from '../models/monster.model.js';
-import { addMoney, addScore, getStages } from '../models/stage.model.js';
+import { addKillBoss, getKillBosses, getMonsters, setMonsters } from '../models/monster.model.js';
+import { addMoney, addScore } from '../models/stage.model.js';
 // 몬스터 스폰 검증
 export const monsterSpawn = (accountId, data) => {
   const { monsters } = getData();
@@ -12,9 +12,19 @@ export const monsterSpawn = (accountId, data) => {
   if (!dbMonster) {
     return { status: 'fail', message: 'monster not found' };
   }
+
   // 몬스터 체력 검증
-  if (monster.monsterHp !== dbMonster.monsterHp) {
-    return { status: 'fail', message: 'monsterHp Is Strange' };
+  if (monster.monsterId === 500) {
+    // 보스 몬스터일 경우 따로 검증
+    const killBossCount = getKillBosses(accountId);
+    if (monster.monsterHp !== dbMonster.monsterHp * Math.pow(2, killBossCount)) {
+      return { status: 'fail', message: 'monsterHp Is Strange' };
+    }
+  } else {
+    // 일반 몬스터 검증
+    if (monster.monsterHp !== dbMonster.monsterHp) {
+      return { status: 'fail', message: 'monsterHp Is Strange' };
+    }
   }
   // 몬스터 스폰 시간 검증
   if (monster.spawnTime !== dbMonster.spawnTime) {
@@ -46,6 +56,11 @@ export const monsterKill = (accountId, data) => {
 
   if (!dbMonster) {
     return { status: 'fail', message: 'invalid monster id' };
+  }
+
+  // 보스를 처치했을 경우 카운트 증가
+  if (monster.monsterId === 500) {
+    addKillBoss(accountId);
   }
 
   // 몬스터의 gold와 score를 추가
