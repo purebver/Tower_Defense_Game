@@ -21,8 +21,26 @@ export class Monster {
     this.attackPower = monsterInfo.monsterAttack; // 몬스터의 공격력 (기지에 가해지는 데미지)
     this.monsterGold = monsterInfo.monsterGold; // 몬스터 골드
     this.monsterScore = monsterInfo.monsterScore; // 몬스터 스코어
-    this.img = new Image();
-    this.img.src = monsterInfo.img; // 몬스터 이미지
+
+    /**
+     * @author 우종
+     * @todo 보스 몬스터 이미지에 애니메이션 효과 넣어줘야함
+     */
+
+    this.img = [];
+    if (this.monsterId === 500) {
+      // 보스 몬스터의 경우 이미지 2개
+      this.img.push(new Image(), new Image());
+      this.img[0].src = monsterInfo.img; // 첫 번째 보스 이미지
+      this.img[1].src = '/images/octoBoss2.png'; // 두 번째 보스 이미지
+    } else {
+      //일반 몬스터의 경우 이미지 1개
+      this.img.push(new Image());
+      this.img[0].src = monsterInfo.img; // 일반 몬스터 이미지
+    }
+    //프레임 수를 카운트 하여 일정 프레임마다 현재 이미지 인덱스를 변경해 주기
+    this.currentImgIndex = 0; //이미지 인덱스
+    this.frameCounter = 0; // 프레임 카운터 초기값
     this.init();
   }
 
@@ -45,6 +63,20 @@ export class Monster {
         // 거리가 속도보다 크면 일정한 비율로 이동하면 됩니다. 이 때, 단위 벡터와 속도를 곱해줘야 해요!
         this.x += (deltaX / distance) * this.speed; // 단위 벡터: deltaX / distance
         this.y += (deltaY / distance) * this.speed; // 단위 벡터: deltaY / distance
+
+        /**
+         * @author 우종
+         */
+
+        this.frameCounter++; //프레임 카운터 증가 시켜서 이미지 전환을 위한 카운트 준비
+
+        //10프레임마다 이미지 전환
+        if (this.frameCounter % 10 === 0) {
+          //프레임 카운터가 10의 배수일 때 마다 현재 이미지의 인덱스를 변경
+          this.currentImgIndex = (this.currentImgIndex + 1) % this.img.length;
+          //현재 이미지 인덱스를 증가시키고 이미지 배열의길이로 나눈 나머지를 사용하여 인덱스를 순회함
+          //이미지 배열의 끝에 도달할 경우 처음으로 돌아감
+        }
       }
       return false;
     } else {
@@ -55,18 +87,23 @@ export class Monster {
   }
 
   draw(ctx) {
-    if (this.img.complete) {
-      ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+    //현재 이미지 인덱스를 사용하여 배열에서 이미지를 선택할 수 있게 변경
+    if (this.img[this.currentImgIndex] && this.img[this.currentImgIndex].complete) {
+      //현재 인덱스에 맞는 이미지를 그릴수 있도록 인덱스 추가
+      ctx.drawImage(this.img[this.currentImgIndex], this.x, this.y, this.width, this.height);
       ctx.font = '12px Arial';
       ctx.fillStyle = 'white';
       ctx.fillText(`(레벨 ${this.level}) ${this.hp}/${this.maxHp}`, this.x, this.y - 5);
     } else {
-      this.img.onload = () => {
-        ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
-        ctx.font = '12px Arial';
-        ctx.fillStyle = 'white';
-        ctx.fillText(`(레벨 ${this.level}) ${this.hp}/${this.maxHp}`, this.x, this.y - 5);
-      };
+      //이미지가 로드되지 않았을 경우 onload 이벤트 처리
+      if (this.img[this.currentImgIndex]) {
+        this.img[this.currentImgIndex].onload = () => {
+          ctx.drawImage(this.img[this.currentImgIndex], this.x, this.y, this.width, this.height);
+          ctx.font = '12px Arial';
+          ctx.fillStyle = 'white';
+          ctx.fillText(`(레벨 ${this.level}) ${this.hp}/${this.maxHp}`, this.x, this.y - 5);
+        };
+      }
     }
   }
 }
