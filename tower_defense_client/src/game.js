@@ -540,6 +540,26 @@ baseUpgradeButton.addEventListener('click', baseUpgrade);
 
 document.body.appendChild(baseUpgradeButton);
 
+/**
+ * @author 우종
+ * @todo 버튼 키보드로 누르게 하는게 편해보임 z,x,c에 할당해주고싶음
+ * @abstract 여기다가 버튼클릭시 올라올 텍스트도 넣어주면 될듯
+ */
+
+document.addEventListener('keydown', (event) => {
+  switch (event.key) {
+    case 'z':
+      buyTowerButton.click(); //z 누르면 타워 구입
+      break;
+    case 'x':
+      sellTowerButton.click(); //x 누르면 타워 판매
+      break;
+    case 'c':
+      baseUpgradeButton.click(); //c 누르면 기지 강화
+      break;
+  }
+});
+
 //타워 선택 및 판매 메서드
 function sellTower() {
   if (selectedTowerIndex !== null) {
