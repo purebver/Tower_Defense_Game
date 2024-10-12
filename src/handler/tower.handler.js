@@ -163,5 +163,5 @@ export const towerSellHandler = (accountId, data) => {
   addMoney(accountId, dbTower.towerCost);
   baseTowerDelete(isBaseTowerDelete);
 
-  return { status: 'success', message: 'attackTowers' };
+  return { status: 'success', message: 'sellTowers' };
 };
