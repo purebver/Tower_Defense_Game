@@ -1,6 +1,6 @@
 import { getData } from '../init/data.js';
 import { getMonsters } from '../models/monster.model.js';
-import { addLevel, getStages } from '../models/stage.model.js';
+import { setLevel, getStages } from '../models/stage.model.js';
 import { getTowers } from '../models/tower.model.js';
 import { goldCalculate } from './gold.handler.js';
 
@@ -12,7 +12,6 @@ export const moveStageHandler = async (accountId, payload) => {
 
     const { nowLevel, nextLevel } = payload;
     const userInfo = getStages(accountId);
-    console.log('test: ', userInfo);
 
     if (userInfo.level !== nowLevel) {
       return { status: 'fail', message: 'level not match' };
@@ -50,7 +49,8 @@ export const moveStageHandler = async (accountId, payload) => {
       return { status: 'fail', message: 'lack of score' };
     }
 
-    addLevel(accountId, nextLevel);
+    setLevel(accountId, nextLevel);
+    console.log('accountId: ', accountId, 'level up to', nextLevel);
     const response = { status: 'success', message: 'level up!!!!!!!!!!!!!!!!!!!!!!!!!!!!!' };
     return response;
   } catch (e) {

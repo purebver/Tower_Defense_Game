@@ -27,7 +27,7 @@ export const addScore = (accountId, score) => {
   stages[accountId].score += score;
 };
 
-export const addLevel = (accountId, level) => {
+export const setLevel = (accountId, level) => {
   stages[accountId].level = level;
 };
 

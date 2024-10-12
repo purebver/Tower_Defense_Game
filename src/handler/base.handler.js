@@ -6,6 +6,7 @@ import {
   setBases,
   setBaseUpgrade,
 } from '../models/base.model.js';
+import { getStages, useMoney } from '../models/stage.model.js';
 
 /**
  * @desc 기지 강화 검증
@@ -16,6 +17,8 @@ export const baseUpgradeHandler = (accountId, data, socket) => {
   const { currentUpgradeIndex, currentGold, base } = data;
   const getBase = getBases(accountId);
   const getUpgrade = getBaseUpgrade(accountId);
+  const userInfo = getStages(accountId);
+
   if (getUpgrade.length === 0) {
     setBaseUpgrade(accountId, currentUpgradeIndex);
   }
@@ -31,7 +34,8 @@ export const baseUpgradeHandler = (accountId, data, socket) => {
   if (
     currentUpgradeIndex !== getBase[getBase.length - 1].currentUpgradeIndex ||
     currentGold < bases[currentUpgradeIndex].baseUpgradeCost ||
-    base.maxHp !== getBase[getBase.length - 1].base.maxHp
+    base.maxHp !== getBase[getBase.length - 1].base.maxHp ||
+    userInfo.money < bases[currentUpgradeIndex].baseUpgradeCost
   ) {
     return { status: 'fail', message: 'Upgrade Fail' };
   }
@@ -43,6 +47,12 @@ export const baseUpgradeHandler = (accountId, data, socket) => {
 
   console.log(getBaseUpgrade(accountId)); // 이거 가져다 골드 검증하면됨
   deleteBase(accountId, 0);
+  useMoney(accountId, bases[currentUpgradeIndex].baseUpgradeCost);
+  console.log(
+    'bases[currentUpgradeIndex].baseUpgradeCost: ',
+    bases[currentUpgradeIndex].baseUpgradeCost,
+  );
+  console.log('getStages(accountId): ', getStages(accountId));
   socket.emit('base', {
     index,
     gold,

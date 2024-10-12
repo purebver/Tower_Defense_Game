@@ -34,6 +34,14 @@ let numOfInitialTowers = 3; // 초기 타워 개수
 let monsterLevel = 0; // 몬스터 레벨
 let monsterSpawnInterval = 2000; // 몬스터 생성 주기
 
+/* 보스 몬스터 */
+const BOSS_SPAWN_PERIOD = 5000;
+const BOSS_MONSTER_ID = 500;
+let isBossSpawned = false;
+let bossSpawnScore = 5000;
+let bossMultiplier = 1;
+let bossMonsterInfo = null;
+
 const monsters = [];
 const towers = [];
 
@@ -265,6 +273,15 @@ function placeBase() {
 }
 
 function spawnMonster() {
+  if (isBossSpawned || (score >= bossSpawnScore && monsters.length > 0)) {
+    return;
+  }
+
+  if (score >= bossSpawnScore && monsters.length === 0) {
+    spawnBossMonster();
+    return;
+  }
+
   let mobId;
   if (monsterLevel === 0) {
     mobId = MIN_MONSTER_ID;
@@ -284,6 +301,29 @@ function spawnMonster() {
   serverSocket.emit('event', {
     handlerId: 10,
     monster: monsterInfo,
+  });
+}
+
+function spawnBossMonster() {
+  if (!bossMonsterInfo) {
+    console.error('Boss monster info not found');
+    return;
+  }
+
+  const bossMultiplierInfo = {
+    ...bossMonsterInfo,
+    monsterHp: bossMonsterInfo.monsterHp * bossMultiplier,
+    level: bossMonsterInfo.level * bossMultiplier,
+  };
+
+  console.log('bossMultiplierInfo: ', bossMultiplierInfo);
+  monsters.push(new Monster(monsterPath, bossMultiplierInfo));
+
+  isBossSpawned = true;
+
+  serverSocket.emit('event', {
+    handlerId: 10,
+    monster: bossMultiplierInfo,
   });
 }
 
@@ -346,6 +386,10 @@ function gameLoop() {
       }
       monster.draw(ctx);
     } else if (monster.hp < -9000) {
+      if (monster.monsterId === BOSS_MONSTER_ID) {
+        isBossSpawned = false;
+        bossSpawnScore += BOSS_SPAWN_PERIOD;
+      }
       monsters.splice(i, 1);
     } else {
       /* 몬스터가 죽었을 때 */
@@ -360,6 +404,12 @@ function gameLoop() {
           monsterGold: monster.monsterGold,
         },
       });
+
+      if (monster.monsterId === BOSS_MONSTER_ID) {
+        bossMultiplier *= 2;
+        isBossSpawned = false;
+        bossSpawnScore += BOSS_SPAWN_PERIOD;
+      }
       monsters.splice(i, 1);
     }
   }
@@ -390,6 +440,7 @@ function initGame() {
   monsterPath = generateRandomMonsterPath(); // 몬스터 경로 생성
   initMap(); // 맵 초기화 (배경, 몬스터 경로 그리기)
   placeBase(); // 기지 배치
+  bossMonsterInfo = monsterData.find((a) => a.monsterId === BOSS_MONSTER_ID); // 보스 몬스터 정보 불러오기
 
   setInterval(spawnMonster, monsterSpawnInterval); // 설정된 몬스터 생성 주기마다 몬스터 생성
   gameLoop(); // 게임 루프 최초 실행
