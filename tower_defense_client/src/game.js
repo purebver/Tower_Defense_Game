@@ -7,6 +7,8 @@ import { Tower } from './tower.js';
 */
 
 let serverSocket; // 서버 웹소켓 객체
+let animationId;
+let isPaused = false;
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -429,7 +431,10 @@ function gameLoop() {
     }
   }
 
-  requestAnimationFrame(gameLoop); // 지속적으로 다음 프레임에 gameLoop 함수 호출할 수 있도록 함
+  //pause 상태가 아니라면 gameLoop 함수 호출
+  if (!isPaused) {
+    requestAnimationFrame(gameLoop); // 지속적으로 다음 프레임에 gameLoop 함수 호출할 수 있도록 함
+  }
 }
 
 function initGame() {
@@ -496,6 +501,18 @@ Promise.all([
 });
 
 //버튼 조정 로직
+const stopButton = document.createElement('button');
+stopButton.textContent = '일시 정지';
+stopButton.style.position = 'absolute';
+stopButton.style.top = '10px';
+stopButton.style.right = '520px';
+stopButton.style.padding = '10px 20px';
+stopButton.style.fontSize = '16px';
+stopButton.style.cursor = 'pointer';
+
+stopButton.addEventListener('click', pauseGame);
+
+document.body.appendChild(stopButton);
 
 const buyTowerButton = document.createElement('button');
 buyTowerButton.textContent = '타워 구입';
@@ -605,3 +622,14 @@ canvas.addEventListener('click', (coordinate) => {
     selectedTowerIndex = null;
   }
 });
+
+// 게임 일시정지 메서드
+function pauseGame() {
+  if (isPaused) {
+    isPaused = false;
+    gameLoop();
+  } else {
+    isPaused = true;
+    cancelAnimationFrame(animationId);
+  }
+}
