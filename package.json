@@ -4,7 +4,7 @@
   "main": "src/app.js",
   "scripts": {
     "dev": "nodemon src/app.js",
-    "excelIntoDB": "node data_DB/excelIntoDB.js"
+    "DB": "node data_DB/csvIntoDB.js"
   },
   "repository": "https://github.com/purebver/Tower_Defense_Game.git",
   "author": "",
