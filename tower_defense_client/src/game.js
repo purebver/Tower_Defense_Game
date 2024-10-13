@@ -111,7 +111,7 @@ function initMap() {
 function baseUpgrade() {
   //[0,1000,2000,4000,8000]
   let baseMaxHp = baseData[upgradeIndex].baseHp; //기지 최대 체력
-  console.log('기지ID', baseMaxHp);
+  // console.log('기지ID', baseMaxHp);
   //업그레이드 가능 여부 체크
 
   if (userGold >= baseData[upgradeIndex].baseUpgradeCost) {
