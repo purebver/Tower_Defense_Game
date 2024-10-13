@@ -93,7 +93,7 @@ export const towerStatsHandler = (accountId, data) => {
   const { attackPower, cooltime, range } = data.tower || {};
 
   //클라이언트의 타워 스텟이 정의되었는지 확인
-  if (!attackPower || !cooltime || !range) {
+  if (!attackPower || cooltime < 0 || !range) {
     return { status: 'fail', message: 'Tower Stats undefined' };
   }
 
