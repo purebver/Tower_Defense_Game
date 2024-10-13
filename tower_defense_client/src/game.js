@@ -626,9 +626,11 @@ canvas.addEventListener('click', (coordinate) => {
 // 게임 일시정지 메서드
 function pauseGame() {
   if (isPaused) {
+    stopButton.textContent = '일시 정지';
     isPaused = false;
     gameLoop();
   } else {
+    stopButton.textContent = '계속 하기';
     isPaused = true;
     cancelAnimationFrame(animationId);
   }
