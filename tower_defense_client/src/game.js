@@ -725,18 +725,20 @@ function pauseGame() {
   const background = document.getElementById('gameCanvas');
 
   if (isPaused) {
-    background.style.opacity = '1';
+    // 이미 Pause 상태인 경우
+    background.style.opacity = '1'; // 배경 불투명도 1로 수정
     stopButton.textContent = '일시 정지';
     pauseText.textContent = '';
     isPaused = false;
-    interval = setInterval(spawnMonster, monsterSpawnInterval);
-    gameLoop();
+    interval = setInterval(spawnMonster, monsterSpawnInterval); // 몬스터 스폰 인터벌 재 설정
+    gameLoop(); // 게임 루프 다시 실행
   } else {
-    background.style.opacity = '0.5';
+    // Pause 상태가 아닌 경우
+    background.style.opacity = '0.5'; // 배경 불투명도 0.5로 수정(반투명)
     stopButton.textContent = '계속 하기';
     pauseText.textContent = '일시 정지';
     isPaused = true;
-    clearInterval(interval);
-    cancelAnimationFrame(animationId);
+    clearInterval(interval); // 몬스터 스폰 인터벌 중단
+    cancelAnimationFrame(animationId); // 게임 루프가 도는것을 멈춤
   }
 }
