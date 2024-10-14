@@ -20,7 +20,7 @@ let lastSpawnedMonsterId = MIN_MONSTER_ID; // 마지막에 소환된 몬스터 i
 //강화시 체력 / 기본 체력/ 강화비용
 let upgradeIndex = 0; //기지 강화 수치 초기값
 
-let userGold = 5000; // 유저 골드
+let userGold = 20000; // 유저 골드
 let base; // 기지 객체
 let firstHp = 1000; // 시작시 초기 체력
 let baseHp = firstHp; // 기지 체력
@@ -539,7 +539,12 @@ sellTowerButton.style.fontSize = '16px';
 sellTowerButton.style.cursor = 'pointer';
 
 sellTowerButton.addEventListener('click', () => {
-  sellTower();
+  const sellTowers = sellTower();
+  if (sellTowers) {
+    showMessage('타워를 판매했습니다.');
+  } else {
+    showMessage('타워를 지정해주세요');
+  }
 });
 
 document.body.appendChild(sellTowerButton);
@@ -567,9 +572,42 @@ pauseText.style.top = '50%';
 pauseText.style.right = '45%';
 pauseText.style.fontSize = '60px';
 document.body.appendChild(pauseText);
+
+/**
+ * @desc 메시지 표시 함수
+ * @author 우종
+ * @todo 버튼 클릭시 기능에 맞는 메시지 출력
+ */
+
+function showMessage(message) {
+  const messageBox = document.createElement('div'); //div:컨테이너
+  messageBox.textContent = message;
+  messageBox.style.position = 'absolute'; // 다른 요소와 안겹치게 하고 원하는 위치에 배치
+  messageBox.style.top = '200px'; //상단 위치
+  messageBox.style.left = '50%';
+  messageBox.style.transform = 'translateX(-50%)'; //x축 -50% 해서 가운데로
+  messageBox.style.backgroundColor = 'transparent'; // 배경 투명하게
+  messageBox.style.color = 'black';
+  messageBox.style.padding = '10px';
+  messageBox.style.borderRadius = '5px';
+  messageBox.style.zIndex = 10000; //다른 요소 위에 표시되도록 하는거
+  messageBox.style.transition = 'transform 0.5s ease, opacity 0.5s ease'; // 애니메이션 추가
+  document.body.appendChild(messageBox); // body에 메시지박스를 생성
+
+  // 애니메이션 시작: 위로 이동 및 투명도 변경
+  setTimeout(() => {
+    messageBox.style.transform = 'translate(-50%, -50px)'; // 위로 이동
+    messageBox.style.opacity = '0'; // 투명도 변경
+  }, 0);
+  //1.5초후 메시지 사라지게
+  setTimeout(() => {
+    document.body.removeChild(messageBox); // 1.5초후 메시지박스 삭제
+  }, 1500);
+}
+
 /**
  * @author 우종
- * @todo 버튼 키보드로 누르게 하는게 편해보임 z,x,c에 할당해주고싶음
+ * @todo 버튼 키보드로 누르게 하는게 편해보임 z,x,c,space에 할당해주고싶음
  * @abstract 여기다가 버튼클릭시 올라올 텍스트도 넣어주면 될듯
  */
 
@@ -584,6 +622,8 @@ document.addEventListener('keydown', (event) => {
     case 'c':
       baseUpgradeButton.click(); //c 누르면 기지 강화
       break;
+    case ' ': //스페이스바 = 공백처리
+      stopButton.click(); //스페이스바 누르면 일시정지
   }
 });
 
@@ -599,8 +639,10 @@ function sellTower() {
       userGold: userGold,
       selectedTowerIndex,
     });
+    selectedTowerIndex = null;
+    return true;
   }
-  selectedTowerIndex = null;
+  return false;
 }
 
 function drawTowerSelection(index) {
