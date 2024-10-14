@@ -293,7 +293,6 @@ function gameLoop() {
        * @author 민석
        * @abstract 몬스터가 죽었을때 DB에 저장되어있는 몬스터 ID에 해당된 골드, 점수 ++
        */
-      
       userGold += monster.monsterGold; // 몬스터가 주는 골드 추가
       score += monster.monsterScore; // 몬스터가 주는 점수 추가
       console.log(monster);
