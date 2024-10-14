@@ -8,7 +8,7 @@ body.index-body {
   width: 100vw;
 
   margin: 0;
-  background-color: #aa2626; /* 배경색 */
+
   background-image: url('/images/Tower_defense_background_img.png');
   background-size: cover; /* 이미지가 화면을 꽉 채우도록 설정 */
   background-position: center; /* 이미지 위치 중앙 */
@@ -84,7 +84,7 @@ body.login-body {
   align-items: center;
   height: 100vh;
   margin: 0;
-  background-color: #aa2626; /* 기본 배경색 */
+
   background-image: url('/images/Tower_defense_background_img.png'); /* 배경 이미지 설정 */
   background-size: cover; /* 이미지가 화면을 꽉 채우도록 설정 */
   background-position: center; /* 이미지 위치 중앙 */
@@ -144,7 +144,6 @@ body.register-body {
   align-items: center;
   height: 100vh;
   margin: 0;
-  background-color: #aa2626; /* 기본 배경색 */
   background-image: url('/images/Tower_defense_background_img.png'); /* 배경 이미지 설정 */
   background-size: cover; /* 이미지가 화면을 꽉 채우도록 설정 */
   background-position: center; /* 이미지 위치 중앙 */
