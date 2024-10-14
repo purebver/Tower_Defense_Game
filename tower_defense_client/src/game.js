@@ -223,16 +223,16 @@ function placeInitialTowers() {
 function placeNewTower() {
   const upgradeTower = towerData[upgradeIndex].towerId;
   const upgradePrice = towerData[upgradeIndex].towerCost;
-  console.log(upgradePrice);
+  // console.log(upgradePrice);
   const towerInfo = towerData.find((a) => a.towerId === upgradeTower);
-  console.log('타워번호', upgradeTower);
+  // console.log('타워번호', upgradeTower);
 
   if (userGold < towerInfo.towerCost) {
     showMessage(`타워를 구입까지 ${upgradePrice - userGold}Gold 가 더 필요합니다`);
     return;
   }
 
-  console.log('towerNum:', upgradeTower);
+  // console.log('towerNum:', upgradeTower);
 
   let currentGold = userGold;
   userGold -= towerInfo.towerCost;
@@ -264,7 +264,7 @@ function placeNewTower() {
     tower: tower,
   });
   showMessage('타워를 설치했습니다.');
-  console.log(tower);
+  // console.log(tower);
 }
 
 function placeBase() {

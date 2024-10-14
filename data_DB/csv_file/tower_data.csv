@@ -1,6 +1,6 @@
 towerId,towerCost,towerAttack,towerSpeed,towerRange,img
-100,1100,10,60,500,/images/towerBase.png
-101,1500,20,70,500,/images/towerCyan.png
-102,2000,40,80,500,/images/towerRed.png
-103,2500,80,90,500,/images/towerYellow.png
-104,3000,1,0,500,/images/testtower.png
+100,1000,10,70,500,/images/tower1.png
+101,1500,100,150,300,/images/tower2.png
+102,2000,40,60,500,/images/tower3.png
+103,2500,80,50,600,/images/tower4.png
+104,3000,1.5,0,500,/images/tower5.png
