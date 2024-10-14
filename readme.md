@@ -16,6 +16,7 @@
 
 - Node.js
 - Express.js
+- MySQL
 
 ## 프로젝트 실행
 
@@ -25,7 +26,13 @@
 yarn install
 ```
 
-2. 실행
+2. CSV 파일 DB에 연동
+
+```
+yarn run DB
+```
+
+3. 실행
 
 ```
 // 서버
@@ -37,7 +44,7 @@ npx http-server tower_defense_-_client
 
 ## ERD 다이어그램
 
-![alt text](image.png)
+![alt text](image-1.png)
 
 ## 조작법
 
