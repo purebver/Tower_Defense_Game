@@ -8,6 +8,7 @@ import { Tower } from './tower.js';
 
 let serverSocket; // 서버 웹소켓 객체
 let animationId;
+let interval;
 let isPaused = false;
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -447,7 +448,7 @@ function initGame() {
   placeBase(); // 기지 배치
   bossMonsterInfo = monsterData.find((a) => a.monsterId === BOSS_MONSTER_ID); // 보스 몬스터 정보 불러오기
 
-  setInterval(spawnMonster, monsterSpawnInterval); // 설정된 몬스터 생성 주기마다 몬스터 생성
+  interval = setInterval(spawnMonster, monsterSpawnInterval); // 설정된 몬스터 생성 주기마다 몬스터 생성
   gameLoop(); // 게임 루프 최초 실행
   isInitGame = true;
   console.log('게임시작: initGame()');
@@ -628,10 +629,12 @@ function pauseGame() {
   if (isPaused) {
     stopButton.textContent = '일시 정지';
     isPaused = false;
+    interval = setInterval(spawnMonster, monsterSpawnInterval);
     gameLoop();
   } else {
     stopButton.textContent = '계속 하기';
     isPaused = true;
+    clearInterval(interval);
     cancelAnimationFrame(animationId);
   }
 }
