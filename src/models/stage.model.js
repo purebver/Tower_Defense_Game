@@ -1,9 +1,11 @@
 const stages = {};
 
+export const moneyBase = 5000;
+
 export const createStages = (accountId) => {
   stages[accountId] = {
     level: 0,
-    money: 0, // 처음 돈은 어떻게 결정할 예정?
+    money: moneyBase, // 처음 돈은 어떻게 결정할 예정?
     score: 0,
   };
 };
@@ -25,14 +27,14 @@ export const addScore = (accountId, score) => {
   stages[accountId].score += score;
 };
 
-export const addLevel = (accountId, level) => {
+export const setLevel = (accountId, level) => {
   stages[accountId].level = level;
 };
 
 export const clearStage = (accountId) => {
   stages[accountId] = {
     level: 0,
-    money: 0, // 처음 돈은 어떻게 결정할 예정?
+    money: moneyBase, // 처음 돈은 어떻게 결정할 예정?
     score: 0,
   };
 };

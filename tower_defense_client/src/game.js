@@ -7,23 +7,43 @@ import { Tower } from './tower.js';
 */
 
 let serverSocket; // 서버 웹소켓 객체
+let animationId;
+let interval;
+let isPaused = false;
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-const NUM_OF_MONSTERS = 5; // 몬스터 개수
+// const NUM_OF_MONSTERS = 5; // 몬스터 개수
+const MIN_MONSTER_ID = 300; // 가장 작은 몬스터 id
+let lastSpawnedMonsterId = MIN_MONSTER_ID; // 마지막에 소환된 몬스터 id
 
-let userGold = 0; // 유저 골드
+//강화시 체력 / 기본 체력/ 강화비용
+let upgradeIndex = 0; //기지 강화 수치 초기값
+
+let userGold = 5000; // 유저 골드
 let base; // 기지 객체
-let baseHp = 0; // 기지 체력
+let firstHp = 1000; // 시작시 초기 체력
+let baseHp = firstHp; // 기지 체력
 
 let towerData = [];
 let monsterData = [];
 let stageData = [];
+let baseData = [];
+
+let selectedTowerIndex = null; //선택된 타워 index
 
 let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 3; // 초기 타워 개수
 let monsterLevel = 0; // 몬스터 레벨
-let monsterSpawnInterval = 1000; // 몬스터 생성 주기
+let monsterSpawnInterval = 2000; // 몬스터 생성 주기
+
+/* 보스 몬스터 */
+const BOSS_SPAWN_PERIOD = 5000;
+const BOSS_MONSTER_ID = 500;
+let isBossSpawned = false;
+let bossSpawnScore = 5000;
+let bossMultiplier = 1;
+let bossMonsterInfo = null;
 
 const monsters = [];
 const towers = [];
@@ -36,18 +56,18 @@ let isInitGame = false;
 const backgroundImage = new Image();
 backgroundImage.src = 'images/bg.webp';
 
-const baseImage = new Image();
-baseImage.src = 'images/base.png';
+// const baseImage = new Image();
+// baseImage.src = 'images/base.png';
 
 const pathImage = new Image();
 pathImage.src = 'images/path.png';
 
-const monsterImages = [];
-for (let i = 1; i <= NUM_OF_MONSTERS; i++) {
-  const img = new Image();
-  img.src = `images/monster${i}.png`;
-  monsterImages.push(img);
-}
+// const monsterImages = [];
+// for (let i = 1; i <= NUM_OF_MONSTERS; i++) {
+//   const img = new Image();
+//   img.src = `images/monster${i}.png`;
+//   monsterImages.push(img);
+// }
 
 let monsterPath;
 
@@ -83,6 +103,38 @@ function generateRandomMonsterPath() {
 function initMap() {
   ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height); // 배경 이미지 그리기
   drawPath();
+}
+
+/**
+ * @desc 기지 강화 로직
+ * @author 우종
+ * @abstract 기지 강화 버튼을 누르면 upgradeIndex를 +1 해줌 upgradeIndex를 타워랑 공유하여 기지 레벨이 오르면 타워 레벨도 ++
+ */
+
+function baseUpgrade() {
+  //[0,1000,2000,4000,8000]
+  let baseMaxHp = baseData[upgradeIndex].baseHp; //기지 최대 체력
+  // console.log('기지ID', baseMaxHp);
+  //업그레이드 가능 여부 체크
+
+  if (userGold >= baseData[upgradeIndex].baseUpgradeCost) {
+    if (upgradeIndex < baseData.length - 1) {
+      serverSocket.emit('event', {
+        handlerId: 35,
+        currentUpgradeIndex: upgradeIndex, //현재 강화 단계
+        currentGold: userGold, //현재 골드
+
+        base: base,
+      });
+
+      console.log('기지 강화 성공');
+      // placeBase();
+    } else {
+      console.log('최대치임');
+    }
+  } else {
+    console.log('돈없음');
+  }
 }
 
 function drawPath() {
@@ -142,14 +194,7 @@ function getRandomPositionNearPath(maxDistance) {
 }
 
 function placeInitialTowers() {
-  /* 
-    타워를 초기에 배치하는 함수입니다.
-    무언가 빠진 코드가 있는 것 같지 않나요? 
-  */
-  console.log('towerData 연결?', towerData);
-
   const towerInfo = towerData.find((a) => a.towerId === 100);
-  console.log('towerInfo 연결', towerInfo);
 
   let tower;
   for (let i = 0; i < numOfInitialTowers; i++) {
@@ -176,14 +221,19 @@ function placeInitialTowers() {
 }
 
 function placeNewTower() {
-  const randomTowerId = Math.floor(Math.random() * 5) + 100;
-  const towerInfo = towerData.find((a) => a.towerId === randomTowerId);
+  const upgradeTower = towerData[upgradeIndex].towerId;
+  const upgradePrice = towerData[upgradeIndex].towerCost;
+  // console.log(upgradePrice);
+  const towerInfo = towerData.find((a) => a.towerId === upgradeTower);
+  // console.log('타워번호', upgradeTower);
 
   if (userGold < towerInfo.towerCost) {
-    alert('message: 타워 구입에 필요한 금액이 부족합니다.');
+    showMessage(`타워를 구입까지 ${upgradePrice - userGold}Gold 가 더 필요합니다`);
     return;
   }
-  console.log('towerNum:', randomTowerId);
+
+  // console.log('towerNum:', upgradeTower);
+
   let currentGold = userGold;
   userGold -= towerInfo.towerCost;
 
@@ -213,23 +263,75 @@ function placeNewTower() {
     handlerId: 33,
     tower: tower,
   });
-  console.log(tower);
+  showMessage('타워를 설치했습니다.');
+  // console.log(tower);
 }
 
 function placeBase() {
   const lastPoint = monsterPath[monsterPath.length - 1];
-  base = new Base(lastPoint.x, lastPoint.y, baseHp);
-  base.draw(ctx, baseImage);
+  const upgradeBase = baseData[upgradeIndex].baseId;
+  const baseInfo = baseData.find((a) => a.baseId === upgradeBase);
+  base = new Base(lastPoint.x, lastPoint.y, baseHp, baseInfo);
+  base.draw(ctx);
+  serverSocket.emit('event', {
+    handlerId: 35,
+    base: base,
+    currentUpgradeIndex: upgradeIndex,
+  });
 }
 
 function spawnMonster() {
-  const monsterInfo = monsterData.find((a) => a.monsterId === 300);
-  console.log(monsterInfo);
-  monsters.push(new Monster(monsterPath, monsterImages, monsterInfo));
+  if (isBossSpawned || (score >= bossSpawnScore && monsters.length > 0)) {
+    return;
+  }
 
+  if (score >= bossSpawnScore && monsters.length === 0) {
+    spawnBossMonster();
+    return;
+  }
+
+  let mobId;
+  if (monsterLevel === 0) {
+    mobId = MIN_MONSTER_ID;
+  } else {
+    // 이전에 생성된 몬스터와 다른 ID를 선택
+    const lowerMobId = MIN_MONSTER_ID + monsterLevel - 1;
+    const higherMobId = MIN_MONSTER_ID + monsterLevel;
+    mobId = lastSpawnedMonsterId === lowerMobId ? higherMobId : lowerMobId;
+  }
+  lastSpawnedMonsterId = mobId;
+  if (Math.random() < 0.1) {
+    mobId = 400 + monsterLevel;
+  }
+  const monsterInfo = monsterData.find((a) => a.monsterId === mobId);
+  console.log('monsterInfo: ', monsterInfo);
+  monsters.push(new Monster(monsterPath, monsterInfo));
   serverSocket.emit('event', {
     handlerId: 10,
     monster: monsterInfo,
+  });
+}
+
+function spawnBossMonster() {
+  if (!bossMonsterInfo) {
+    console.error('Boss monster info not found');
+    return;
+  }
+
+  const bossMultiplierInfo = {
+    ...bossMonsterInfo,
+    monsterHp: bossMonsterInfo.monsterHp * bossMultiplier,
+    level: bossMonsterInfo.level * bossMultiplier,
+  };
+
+  console.log('bossMultiplierInfo: ', bossMultiplierInfo);
+  monsters.push(new Monster(monsterPath, bossMultiplierInfo));
+
+  isBossSpawned = true;
+
+  serverSocket.emit('event', {
+    handlerId: 10,
+    monster: bossMultiplierInfo,
   });
 }
 
@@ -249,6 +351,9 @@ function gameLoop() {
   ctx.fillText(`현재 레벨: ${monsterLevel}`, 100, 200); // 최고 기록 표시
 
   // 타워 그리기 및 몬스터 공격 처리
+  if (selectedTowerIndex !== null) {
+    drawTowerSelection(selectedTowerIndex);
+  }
   towers.forEach((tower) => {
     tower.draw(ctx);
     tower.updateCooldown();
@@ -271,12 +376,13 @@ function gameLoop() {
     });
   });
   // 몬스터가 공격을 했을 수 있으므로 기지 다시 그리기
-  base.draw(ctx, baseImage);
+  base.draw(ctx);
 
   for (let i = monsters.length - 1; i >= 0; i--) {
     const monster = monsters[i];
     if (monster.hp > 0) {
       const isDestroyed = monster.move(base);
+
       if (isDestroyed) {
         /* 게임 오버 */
         serverSocket.emit('event', {
@@ -287,6 +393,12 @@ function gameLoop() {
         location.reload();
       }
       monster.draw(ctx);
+    } else if (monster.hp < -9000) {
+      if (monster.monsterId === BOSS_MONSTER_ID) {
+        isBossSpawned = false;
+        bossSpawnScore += BOSS_SPAWN_PERIOD;
+      }
+      monsters.splice(i, 1);
     } else {
       /**
        * @desc 골드, 점수 추가
@@ -304,6 +416,12 @@ function gameLoop() {
           monsterGold: monster.monsterGold,
         },
       });
+
+      if (monster.monsterId === BOSS_MONSTER_ID) {
+        bossMultiplier *= 2;
+        isBossSpawned = false;
+        bossSpawnScore += BOSS_SPAWN_PERIOD;
+      }
       monsters.splice(i, 1);
     }
   }
@@ -316,13 +434,17 @@ function gameLoop() {
         handlerId: 21,
         nowLevel: monsterLevel,
         nextLevel: monsterLevel + 1,
+        clientUserGold: userGold,
       });
       monsterLevel += 1;
       console.log('level up');
     }
   }
 
-  requestAnimationFrame(gameLoop); // 지속적으로 다음 프레임에 gameLoop 함수 호출할 수 있도록 함
+  //pause 상태가 아니라면 gameLoop 함수 호출
+  if (!isPaused) {
+    requestAnimationFrame(gameLoop); // 지속적으로 다음 프레임에 gameLoop 함수 호출할 수 있도록 함
+  }
 }
 
 function initGame() {
@@ -333,8 +455,9 @@ function initGame() {
   monsterPath = generateRandomMonsterPath(); // 몬스터 경로 생성
   initMap(); // 맵 초기화 (배경, 몬스터 경로 그리기)
   placeBase(); // 기지 배치
+  bossMonsterInfo = monsterData.find((a) => a.monsterId === BOSS_MONSTER_ID); // 보스 몬스터 정보 불러오기
 
-  setInterval(spawnMonster, monsterSpawnInterval); // 설정된 몬스터 생성 주기마다 몬스터 생성
+  interval = setInterval(spawnMonster, monsterSpawnInterval); // 설정된 몬스터 생성 주기마다 몬스터 생성
   gameLoop(); // 게임 루프 최초 실행
   isInitGame = true;
   console.log('게임시작: initGame()');
@@ -347,9 +470,9 @@ function initGame() {
 // 이미지 로딩 완료 후 서버와 연결하고 게임 초기화
 Promise.all([
   new Promise((resolve) => (backgroundImage.onload = resolve)),
-  new Promise((resolve) => (baseImage.onload = resolve)),
+  // new Promise((resolve) => (baseImage.onload = resolve)),
   new Promise((resolve) => (pathImage.onload = resolve)),
-  ...monsterImages.map((img) => new Promise((resolve) => (img.onload = resolve))),
+  // ...monsterImages.map((img) => new Promise((resolve) => (img.onload = resolve))),
 ]).then(() => {
   /* 서버 접속 코드 (여기도 완성해주세요!) */
 
@@ -359,10 +482,12 @@ Promise.all([
       token: somewhere, // 토큰이 저장된 어딘가에서 가져와야 합니다!
     },
   });
-  serverSocket.on('datainfo', async ({ towers, monsters, stages }) => {
+  serverSocket.on('datainfo', async ({ towers, monsters, stages, bases, userHighScore }) => {
     towerData.push(...towers);
     monsterData.push(...monsters);
     stageData.push(...stages);
+    baseData.push(...bases);
+    highScore = userHighScore;
     console.log('datainfo get');
     if (!isInitGame) {
       initGame();
@@ -373,21 +498,38 @@ Promise.all([
   });
   serverSocket.on('response', (data) => {
     console.log(data);
+    if (data.error) {
+      alert(data.message);
+      location.reload();
+    }
   });
-
-  /* 
-    서버의 이벤트들을 받는 코드들은 여기다가 쭉 작성해주시면 됩니다! 
-    e.g. serverSocket.on("...", () => {...});
-    이 때, 상태 동기화 이벤트의 경우에 아래의 코드를 마지막에 넣어주세요! 최초의 상태 동기화 이후에 게임을 초기화해야 하기 때문입니다! 
-    
-  */
+  serverSocket.on('base', (data) => {
+    upgradeIndex = data.index;
+    userGold = data.gold;
+    baseHp = data.hp;
+    placeBase();
+  });
 });
+
+//버튼 조정 로직
+const stopButton = document.createElement('button');
+stopButton.textContent = '일시 정지';
+stopButton.style.position = 'absolute';
+stopButton.style.top = '10px';
+stopButton.style.right = '520px';
+stopButton.style.padding = '10px 20px';
+stopButton.style.fontSize = '16px';
+stopButton.style.cursor = 'pointer';
+
+stopButton.addEventListener('click', pauseGame);
+
+document.body.appendChild(stopButton);
 
 const buyTowerButton = document.createElement('button');
 buyTowerButton.textContent = '타워 구입';
 buyTowerButton.style.position = 'absolute';
 buyTowerButton.style.top = '10px';
-buyTowerButton.style.right = '10px';
+buyTowerButton.style.right = '350px';
 buyTowerButton.style.padding = '10px 20px';
 buyTowerButton.style.fontSize = '16px';
 buyTowerButton.style.cursor = 'pointer';
@@ -395,3 +537,191 @@ buyTowerButton.style.cursor = 'pointer';
 buyTowerButton.addEventListener('click', placeNewTower);
 
 document.body.appendChild(buyTowerButton);
+
+const sellTowerButton = document.createElement('button');
+sellTowerButton.textContent = '타워 판매';
+sellTowerButton.style.position = 'absolute';
+sellTowerButton.style.top = '10px';
+sellTowerButton.style.right = '180px';
+sellTowerButton.style.padding = '10px 20px';
+sellTowerButton.style.fontSize = '16px';
+sellTowerButton.style.cursor = 'pointer';
+
+sellTowerButton.addEventListener('click', () => {
+  const sellTowers = sellTower();
+  if (sellTowers) {
+    const sellTowerPrice = towerData[upgradeIndex].towerCost;
+    showMessage(`타워를 판매해 ${sellTowerPrice}Gold를 획득했습니다..`);
+  } else {
+    showMessage('타워를 지정해주세요');
+  }
+});
+
+document.body.appendChild(sellTowerButton);
+
+let selectedTower = null;
+
+const baseUpgradeButton = document.createElement('button');
+baseUpgradeButton.textContent = '기지 강화';
+baseUpgradeButton.style.position = 'absolute';
+baseUpgradeButton.style.top = '10px';
+baseUpgradeButton.style.right = '10px';
+baseUpgradeButton.style.padding = '10px 20px';
+baseUpgradeButton.style.fontSize = '16px';
+baseUpgradeButton.style.cursor = 'pointer';
+
+baseUpgradeButton.addEventListener('click', () => {
+  const baseUpgradePrice = baseData[upgradeIndex].baseUpgradeCost;
+  if (userGold >= baseData[upgradeIndex].baseUpgradeCost) {
+    if (upgradeIndex < baseData.length - 1) {
+      baseUpgrade();
+      showMessage('기지를 강화합니다!');
+      // placeBase();
+    } else if (
+      (userGold >= baseUpgradePrice && upgradeIndex >= baseData.length - 1) ||
+      (userGold <= baseUpgradePrice && upgradeIndex >= baseData.length - 1)
+    ) {
+      showMessage('이미 기지가 최고단계입니다!');
+    }
+  } else {
+    showMessage(`기지 강화는 ${baseUpgradePrice - userGold}Gold 가 더 필요합니다.`);
+  }
+});
+
+document.body.appendChild(baseUpgradeButton);
+
+//일시정지 텍스트
+const pauseText = document.createElement('text');
+pauseText.textContent = '';
+pauseText.style.position = 'absolute';
+pauseText.style.top = '50%';
+pauseText.style.right = '45%';
+pauseText.style.fontSize = '60px';
+document.body.appendChild(pauseText);
+
+/**
+ * @desc 메시지 표시 함수
+ * @author 우종
+ * @todo 버튼 클릭시 기능에 맞는 메시지 출력
+ */
+
+function showMessage(message) {
+  const messageBox = document.createElement('div'); //div:컨테이너
+  messageBox.textContent = message;
+  messageBox.style.position = 'absolute'; // 다른 요소와 안겹치게 하고 원하는 위치에 배치
+  messageBox.style.top = '200px'; //상단 위치
+  messageBox.style.left = '50%';
+  messageBox.style.transform = 'translateX(-50%)'; //x축 -50% 해서 가운데로
+  messageBox.style.backgroundColor = 'transparent'; // 배경 투명하게
+  messageBox.style.fontSize = '60px';
+  messageBox.style.color = 'white';
+  messageBox.style.padding = '10px';
+  messageBox.style.borderRadius = '5px';
+  messageBox.style.zIndex = 10000; //다른 요소 위에 표시되도록 하는거
+  messageBox.style.transition = 'transform 0.5s ease, opacity 0.5s ease'; // 애니메이션 추가
+  document.body.appendChild(messageBox); // body에 메시지박스를 생성
+
+  // 애니메이션 시작: 위로 이동 및 투명도 변경
+  setTimeout(() => {
+    messageBox.style.transform = 'translate(-50%, -50px)'; // 위로 이동
+    messageBox.style.opacity = '0'; // 투명도 변경
+  }, 0);
+  //1.5초후 메시지 사라지게
+  setTimeout(() => {
+    document.body.removeChild(messageBox); // 1.5초후 메시지박스 삭제
+  }, 1500);
+}
+
+/**
+ * @author 우종
+ * @todo 버튼 키보드로 누르게 하는게 편해보임 z,x,c,space에 할당해주고싶음
+ * @abstract 여기다가 버튼클릭시 올라올 텍스트도 넣어주면 될듯
+ */
+
+document.addEventListener('keydown', (event) => {
+  switch (event.key) {
+    case 'z':
+      buyTowerButton.click(); //z 누르면 타워 구입
+      break;
+    case 'x':
+      sellTowerButton.click(); //x 누르면 타워 판매
+      break;
+    case 'c':
+      baseUpgradeButton.click(); //c 누르면 기지 강화
+      break;
+    case ' ': //스페이스바 = 공백처리
+      stopButton.click(); //스페이스바 누르면 일시정지
+  }
+});
+
+//타워 판매 메서드
+function sellTower() {
+  if (selectedTowerIndex !== null) {
+    const [tower] = towers.splice(selectedTowerIndex, 1);
+    const beforeGold = userGold;
+    userGold += tower.cost;
+    serverSocket.emit('event', {
+      handlerId: 34,
+      beforeGold,
+      userGold: userGold,
+      selectedTowerIndex,
+    });
+    selectedTowerIndex = null;
+    return true;
+  }
+  return false;
+}
+
+//선택 타워 표기
+function drawTowerSelection(index) {
+  const tower = towers[index];
+  ctx.strokeStyle = 'red';
+  ctx.lineWidth = 10;
+  ctx.strokeRect(tower.x + tower.width / 2 - 2.5, tower.y - 15, 10, 10);
+}
+
+//타워 위치 검사
+function selectTower(x, y, tower) {
+  return x > tower.x && x < tower.x + tower.width && y > tower.y && y < tower.y + tower.height;
+}
+
+//타워 선택
+canvas.addEventListener('click', (coordinate) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = coordinate.clientX - rect.left;
+  const y = coordinate.clientY - rect.top;
+
+  let boolean = false;
+
+  towers.forEach((tower, index) => {
+    if (selectTower(x, y, tower)) {
+      selectedTowerIndex = index;
+      boolean = true;
+    }
+  });
+
+  if (!boolean) {
+    selectedTowerIndex = null;
+  }
+});
+
+// 게임 일시정지 메서드
+function pauseGame() {
+  const background = document.getElementById('gameCanvas');
+
+  if (isPaused) {
+    background.style.opacity = '1';
+    stopButton.textContent = '일시 정지';
+    pauseText.textContent = '';
+    isPaused = false;
+    interval = setInterval(spawnMonster, monsterSpawnInterval);
+    gameLoop();
+  } else {
+    background.style.opacity = '0.5';
+    stopButton.textContent = '계속 하기';
+    pauseText.textContent = '일시 정지';
+    isPaused = true;
+    clearInterval(interval);
+    cancelAnimationFrame(animationId);
+  }
+}

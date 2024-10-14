@@ -1,7 +1,7 @@
 import { getData } from '../init/data.js';
-import { getStages, useMoney } from '../models/stage.model.js';
-import { getTowers, setTowers } from '../models/tower.model.js';
-import goldCalculate from './gold.handler.js'
+import { getStages, addMoney, useMoney } from '../models/stage.model.js';
+import { deleteTowers, getTowers, setTowers } from '../models/tower.model.js';
+import { baseTowerDelete } from './gold.handler.js';
 
 /**
  * @desc 초기 타워 검증
@@ -56,9 +56,9 @@ export const towerBuyHandler = (accountId, data) => {
   //타워 구매시 타워가 구매한 만큼만 추가되었는지 검증
   const getTower = getTowers(accountId);
   //getTower의 값이 undefined인 경우 에러처리
-  if (!Array.isArray(getTower) || getTower.length === 0) {
-    return { status: 'fail', message: 'Tower is Not Found' };
-  }
+  // if (!Array.isArray(getTower) || getTower.length === 0) {
+  //   return { status: 'fail', message: 'Tower is Not Found' };
+  // }
   // console.log('getTower', getTower);
   if (data.currentTower.length - 1 !== getTower.length) {
     return { status: 'fail', message: 'The Number of Towers Is Strange.' };
@@ -67,9 +67,6 @@ export const towerBuyHandler = (accountId, data) => {
   setTowers(accountId, data.towerObj);
 
   useMoney(accountId, towerPrice);
-  setTowers(accountId, data.currentTower);
-
-  goldCalculate(getTowers(accountId));
 
   return { status: 'success', message: 'Tower Purchase Success' };
 };
@@ -96,7 +93,7 @@ export const towerStatsHandler = (accountId, data) => {
   const { attackPower, cooltime, range } = data.tower || {};
 
   //클라이언트의 타워 스텟이 정의되었는지 확인
-  if (!attackPower || !cooltime || !range) {
+  if (!attackPower || cooltime < 0 || !range) {
     return { status: 'fail', message: 'Tower Stats undefined' };
   }
 
@@ -141,4 +138,34 @@ export const towerAttackHandler = (accountId, data) => {
     return { status: 'fail', message: 'monster lost Hp' };
   }
   return { status: 'success', message: 'attackTowers' };
+};
+
+//타워 판매
+export const towerSellHandler = (accountId, data) => {
+  //타워 db데이터
+  const { towers } = getData();
+  const gettowers = getTowers(accountId);
+  //클라이언트의 타워
+  const towerId = gettowers[data.selectedTowerIndex];
+  //클라이언트의 타워 id와 같은 db타워 검색
+  const dbTower = towers.find((a) => a.towerId === towerId);
+
+  //선택 타워 제거
+  deleteTowers(accountId, data.selectedTowerIndex);
+
+  //유저 현재 골드 - 이전 보유 골드 = 타워금액
+  if (data.userGold - data.beforeGold !== dbTower.towerCost) {
+    return { status: 'fail', message: 'The selling price is strange' };
+  }
+
+  //골드 검증
+  let isBaseTowerDelete = false;
+  if (dbTower.towerId === 100) {
+    isBaseTowerDelete = true;
+  }
+
+  addMoney(accountId, dbTower.towerCost);
+  baseTowerDelete(isBaseTowerDelete);
+
+  return { status: 'success', message: 'sellTowers' };
 };
