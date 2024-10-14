@@ -35,7 +35,7 @@ let selectedTowerIndex = null; //선택된 타워 index
 let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 3; // 초기 타워 개수
 let monsterLevel = 0; // 몬스터 레벨
-let monsterSpawnInterval = 2000; // 몬스터 생성 주기
+let monsterSpawnInterval; // 몬스터 생성 주기
 
 /* 보스 몬스터 */
 const BOSS_SPAWN_PERIOD = 5000;
@@ -70,6 +70,11 @@ pathImage.src = 'images/path.png';
 // }
 
 let monsterPath;
+// 몬스터 생성 주기 세팅
+function setMonsterInterval() {
+  const monsterInfo = monsterData.find((a) => a.monsterId === MIN_MONSTER_ID);
+  monsterSpawnInterval = monsterInfo.spawnTime;
+}
 
 function generateRandomMonsterPath() {
   const path = [];
@@ -469,7 +474,7 @@ function initGame() {
   initMap(); // 맵 초기화 (배경, 몬스터 경로 그리기)
   placeBase(); // 기지 배치
   bossMonsterInfo = monsterData.find((a) => a.monsterId === BOSS_MONSTER_ID); // 보스 몬스터 정보 불러오기
-
+  setMonsterInterval(); // 몬스터 생성 주기 설정
   interval = setInterval(spawnMonster, monsterSpawnInterval); // 설정된 몬스터 생성 주기마다 몬스터 생성
   gameLoop(); // 게임 루프 최초 실행
   isInitGame = true;
@@ -725,18 +730,20 @@ function pauseGame() {
   const background = document.getElementById('gameCanvas');
 
   if (isPaused) {
-    background.style.opacity = '1';
+    // 이미 Pause 상태인 경우
+    background.style.opacity = '1'; // 배경 불투명도 1로 수정
     stopButton.textContent = '일시 정지';
     pauseText.textContent = '';
     isPaused = false;
-    interval = setInterval(spawnMonster, monsterSpawnInterval);
-    gameLoop();
+    interval = setInterval(spawnMonster, monsterSpawnInterval); // 몬스터 스폰 인터벌 재 설정
+    gameLoop(); // 게임 루프 다시 실행
   } else {
-    background.style.opacity = '0.5';
+    // Pause 상태가 아닌 경우
+    background.style.opacity = '0.5'; // 배경 불투명도 0.5로 수정(반투명)
     stopButton.textContent = '계속 하기';
     pauseText.textContent = '일시 정지';
     isPaused = true;
-    clearInterval(interval);
-    cancelAnimationFrame(animationId);
+    clearInterval(interval); // 몬스터 스폰 인터벌 중단
+    cancelAnimationFrame(animationId); // 게임 루프가 도는것을 멈춤
   }
 }
