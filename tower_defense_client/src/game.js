@@ -650,7 +650,7 @@ document.addEventListener('keydown', (event) => {
   }
 });
 
-//타워 선택 및 판매 메서드
+//타워 판매 메서드
 function sellTower() {
   if (selectedTowerIndex !== null) {
     const [tower] = towers.splice(selectedTowerIndex, 1);
@@ -668,6 +668,7 @@ function sellTower() {
   return false;
 }
 
+//선택 타워 표기
 function drawTowerSelection(index) {
   const tower = towers[index];
   ctx.strokeStyle = 'red';
@@ -675,10 +676,12 @@ function drawTowerSelection(index) {
   ctx.strokeRect(tower.x + tower.width / 2 - 2.5, tower.y - 15, 10, 10);
 }
 
+//타워 위치 검사
 function selectTower(x, y, tower) {
   return x > tower.x && x < tower.x + tower.width && y > tower.y && y < tower.y + tower.height;
 }
 
+//타워 선택
 canvas.addEventListener('click', (coordinate) => {
   const rect = canvas.getBoundingClientRect();
   const x = coordinate.clientX - rect.left;
