@@ -1,5 +1,5 @@
 export class Base {
-  constructor(x, y, maxHp) {
+  constructor(x, y, maxHp, baseInfo) {
     // 생성자 안에서 기지의 속성을 정의한다고 생각하시면 됩니다!
     this.x = x; // 기지 이미지 x 좌표
     this.y = y; // 기지 이미지 y 좌표
@@ -7,16 +7,12 @@ export class Base {
     this.height = 225; // 기지 이미지 세로 길이
     this.hp = maxHp; // 기지의 현재 HP
     this.maxHp = maxHp; // 기지의 최대 HP
+    this.img = new Image();
+    this.img.src = baseInfo.img;
   }
 
-  draw(ctx, baseImage) {
-    ctx.drawImage(
-      baseImage,
-      this.x - this.width,
-      this.y - this.height / 2,
-      this.width,
-      this.height,
-    );
+  draw(ctx) {
+    ctx.drawImage(this.img, this.x - this.width, this.y - this.height / 2, this.width, this.height);
 
     ctx.font = '16px Arial';
     ctx.fillStyle = 'white';

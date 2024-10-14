@@ -56,8 +56,8 @@ let isInitGame = false;
 const backgroundImage = new Image();
 backgroundImage.src = 'images/bg.webp';
 
-const baseImage = new Image();
-baseImage.src = 'images/base.png';
+// const baseImage = new Image();
+// baseImage.src = 'images/base.png';
 
 const pathImage = new Image();
 pathImage.src = 'images/path.png';
@@ -269,8 +269,10 @@ function placeNewTower() {
 
 function placeBase() {
   const lastPoint = monsterPath[monsterPath.length - 1];
-  base = new Base(lastPoint.x, lastPoint.y, baseHp);
-  base.draw(ctx, baseImage);
+  const upgradeBase = baseData[upgradeIndex].baseId;
+  const baseInfo = baseData.find((a) => a.baseId === upgradeBase);
+  base = new Base(lastPoint.x, lastPoint.y, baseHp, baseInfo);
+  base.draw(ctx);
   serverSocket.emit('event', {
     handlerId: 35,
     base: base,
@@ -374,7 +376,7 @@ function gameLoop() {
     });
   });
   // 몬스터가 공격을 했을 수 있으므로 기지 다시 그리기
-  base.draw(ctx, baseImage);
+  base.draw(ctx);
 
   for (let i = monsters.length - 1; i >= 0; i--) {
     const monster = monsters[i];
@@ -464,7 +466,7 @@ function initGame() {
 // 이미지 로딩 완료 후 서버와 연결하고 게임 초기화
 Promise.all([
   new Promise((resolve) => (backgroundImage.onload = resolve)),
-  new Promise((resolve) => (baseImage.onload = resolve)),
+  // new Promise((resolve) => (baseImage.onload = resolve)),
   new Promise((resolve) => (pathImage.onload = resolve)),
   // ...monsterImages.map((img) => new Promise((resolve) => (img.onload = resolve))),
 ]).then(() => {
@@ -565,19 +567,19 @@ baseUpgradeButton.style.fontSize = '16px';
 baseUpgradeButton.style.cursor = 'pointer';
 
 baseUpgradeButton.addEventListener('click', () => {
+  const baseUpgradePrice = baseData[upgradeIndex].baseUpgradeCost;
   if (userGold >= baseData[upgradeIndex].baseUpgradeCost) {
     if (upgradeIndex < baseData.length - 1) {
       baseUpgrade();
       showMessage('기지를 강화합니다!');
       // placeBase();
     } else if (
-      (userGold >= baseData[upgradeIndex].baseUpgradeCost && upgradeIndex >= baseData.length - 1) ||
-      (userGold <= baseData[upgradeIndex].baseUpgradeCost && upgradeIndex >= baseData.length - 1)
+      (userGold >= baseUpgradePrice && upgradeIndex >= baseData.length - 1) ||
+      (userGold <= baseUpgradePrice && upgradeIndex >= baseData.length - 1)
     ) {
       showMessage('이미 기지가 최고단계입니다!');
     }
   } else {
-    const baseUpgradePrice = baseData[upgradeIndex].baseUpgradeCost;
     showMessage(`기지 강화는 ${baseUpgradePrice - userGold}Gold 가 더 필요합니다.`);
   }
 });
