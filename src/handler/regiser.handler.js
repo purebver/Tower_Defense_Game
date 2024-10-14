@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { addUser } from '../models/user.model.js';
 import { createBase } from '../models/base.model.js';
+import { prisma } from '../utils/prisma/prisma.client.js';
 
 dotenv.config();
 
@@ -17,6 +18,13 @@ const registerHandler = (io) => {
       const accountId = decodedToken.id;
       console.log('accountId: ', accountId);
 
+      const userHighScore = await prisma.user.findFirst({
+        where: { id: accountId },
+        select: {
+          highScore: true,
+        },
+      });
+      console.log(userHighScore);
       //유저 추가
       addUser({ accountId, socketId: socket.id });
 
@@ -33,6 +41,7 @@ const registerHandler = (io) => {
         monsters,
         stages,
         bases,
+        userHighScore: userHighScore.highScore,
       });
 
       //접속 후

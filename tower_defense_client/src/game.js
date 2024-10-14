@@ -7,6 +7,9 @@ import { Tower } from './tower.js';
 */
 
 let serverSocket; // 서버 웹소켓 객체
+let animationId;
+let interval;
+let isPaused = false;
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -223,7 +226,7 @@ function placeNewTower() {
   console.log('타워번호', upgradeTower);
 
   if (userGold < towerInfo.towerCost) {
-    alert('message: 타워 구입에 필요한 금액이 부족합니다.');
+    showMessage('타워를 구입하기위한 비용이 부족합니다.');
     return;
   }
 
@@ -258,6 +261,7 @@ function placeNewTower() {
     handlerId: 33,
     tower: tower,
   });
+  showMessage('타워를 설치했습니다.');
   console.log(tower);
 }
 
@@ -429,7 +433,10 @@ function gameLoop() {
     }
   }
 
-  requestAnimationFrame(gameLoop); // 지속적으로 다음 프레임에 gameLoop 함수 호출할 수 있도록 함
+  //pause 상태가 아니라면 gameLoop 함수 호출
+  if (!isPaused) {
+    requestAnimationFrame(gameLoop); // 지속적으로 다음 프레임에 gameLoop 함수 호출할 수 있도록 함
+  }
 }
 
 function initGame() {
@@ -442,7 +449,7 @@ function initGame() {
   placeBase(); // 기지 배치
   bossMonsterInfo = monsterData.find((a) => a.monsterId === BOSS_MONSTER_ID); // 보스 몬스터 정보 불러오기
 
-  setInterval(spawnMonster, monsterSpawnInterval); // 설정된 몬스터 생성 주기마다 몬스터 생성
+  interval = setInterval(spawnMonster, monsterSpawnInterval); // 설정된 몬스터 생성 주기마다 몬스터 생성
   gameLoop(); // 게임 루프 최초 실행
   isInitGame = true;
   console.log('게임시작: initGame()');
@@ -467,11 +474,12 @@ Promise.all([
       token: somewhere, // 토큰이 저장된 어딘가에서 가져와야 합니다!
     },
   });
-  serverSocket.on('datainfo', async ({ towers, monsters, stages, bases }) => {
+  serverSocket.on('datainfo', async ({ towers, monsters, stages, bases, userHighScore }) => {
     towerData.push(...towers);
     monsterData.push(...monsters);
     stageData.push(...stages);
     baseData.push(...bases);
+    highScore = userHighScore;
     console.log('datainfo get');
     if (!isInitGame) {
       initGame();
@@ -483,7 +491,7 @@ Promise.all([
   serverSocket.on('response', (data) => {
     console.log(data);
     if (data.error) {
-      alert('오류 발생');
+      alert(data.message);
       location.reload();
     }
   });
@@ -496,6 +504,18 @@ Promise.all([
 });
 
 //버튼 조정 로직
+const stopButton = document.createElement('button');
+stopButton.textContent = '일시 정지';
+stopButton.style.position = 'absolute';
+stopButton.style.top = '10px';
+stopButton.style.right = '520px';
+stopButton.style.padding = '10px 20px';
+stopButton.style.fontSize = '16px';
+stopButton.style.cursor = 'pointer';
+
+stopButton.addEventListener('click', pauseGame);
+
+document.body.appendChild(stopButton);
 
 const buyTowerButton = document.createElement('button');
 buyTowerButton.textContent = '타워 구입';
@@ -520,7 +540,12 @@ sellTowerButton.style.fontSize = '16px';
 sellTowerButton.style.cursor = 'pointer';
 
 sellTowerButton.addEventListener('click', () => {
-  sellTower();
+  const sellTowers = sellTower();
+  if (sellTowers) {
+    showMessage('타워를 판매했습니다.');
+  } else {
+    showMessage('타워를 지정해주세요');
+  }
 });
 
 document.body.appendChild(sellTowerButton);
@@ -536,13 +561,70 @@ baseUpgradeButton.style.padding = '10px 20px';
 baseUpgradeButton.style.fontSize = '16px';
 baseUpgradeButton.style.cursor = 'pointer';
 
-baseUpgradeButton.addEventListener('click', baseUpgrade);
+baseUpgradeButton.addEventListener('click', () => {
+  if (userGold >= baseData[upgradeIndex].baseUpgradeCost) {
+    if (upgradeIndex < baseData.length - 1) {
+      baseUpgrade();
+      showMessage('기지를 강화합니다!');
+      // placeBase();
+    } else if (
+      (userGold >= baseData[upgradeIndex].baseUpgradeCost && upgradeIndex >= baseData.length - 1) ||
+      (userGold <= baseData[upgradeIndex].baseUpgradeCost && upgradeIndex >= baseData.length - 1)
+    ) {
+      showMessage('이미 기지가 최고단계입니다!');
+    }
+  } else {
+    showMessage('돈이 부족합니다!');
+  }
+});
 
 document.body.appendChild(baseUpgradeButton);
 
+//일시정지 텍스트
+const pauseText = document.createElement('text');
+pauseText.textContent = '';
+pauseText.style.position = 'absolute';
+pauseText.style.top = '50%';
+pauseText.style.right = '45%';
+pauseText.style.fontSize = '60px';
+document.body.appendChild(pauseText);
+
+/**
+ * @desc 메시지 표시 함수
+ * @author 우종
+ * @todo 버튼 클릭시 기능에 맞는 메시지 출력
+ */
+
+function showMessage(message) {
+  const messageBox = document.createElement('div'); //div:컨테이너
+  messageBox.textContent = message;
+  messageBox.style.position = 'absolute'; // 다른 요소와 안겹치게 하고 원하는 위치에 배치
+  messageBox.style.top = '200px'; //상단 위치
+  messageBox.style.left = '50%';
+  messageBox.style.transform = 'translateX(-50%)'; //x축 -50% 해서 가운데로
+  messageBox.style.backgroundColor = 'transparent'; // 배경 투명하게
+  messageBox.style.fontSize = '60px';
+  messageBox.style.color = 'black';
+  messageBox.style.padding = '10px';
+  messageBox.style.borderRadius = '5px';
+  messageBox.style.zIndex = 10000; //다른 요소 위에 표시되도록 하는거
+  messageBox.style.transition = 'transform 0.5s ease, opacity 0.5s ease'; // 애니메이션 추가
+  document.body.appendChild(messageBox); // body에 메시지박스를 생성
+
+  // 애니메이션 시작: 위로 이동 및 투명도 변경
+  setTimeout(() => {
+    messageBox.style.transform = 'translate(-50%, -50px)'; // 위로 이동
+    messageBox.style.opacity = '0'; // 투명도 변경
+  }, 0);
+  //1.5초후 메시지 사라지게
+  setTimeout(() => {
+    document.body.removeChild(messageBox); // 1.5초후 메시지박스 삭제
+  }, 1500);
+}
+
 /**
  * @author 우종
- * @todo 버튼 키보드로 누르게 하는게 편해보임 z,x,c에 할당해주고싶음
+ * @todo 버튼 키보드로 누르게 하는게 편해보임 z,x,c,space에 할당해주고싶음
  * @abstract 여기다가 버튼클릭시 올라올 텍스트도 넣어주면 될듯
  */
 
@@ -557,6 +639,8 @@ document.addEventListener('keydown', (event) => {
     case 'c':
       baseUpgradeButton.click(); //c 누르면 기지 강화
       break;
+    case ' ': //스페이스바 = 공백처리
+      stopButton.click(); //스페이스바 누르면 일시정지
   }
 });
 
@@ -572,8 +656,10 @@ function sellTower() {
       userGold: userGold,
       selectedTowerIndex,
     });
+    selectedTowerIndex = null;
+    return true;
   }
-  selectedTowerIndex = null;
+  return false;
 }
 
 function drawTowerSelection(index) {
@@ -605,3 +691,24 @@ canvas.addEventListener('click', (coordinate) => {
     selectedTowerIndex = null;
   }
 });
+
+// 게임 일시정지 메서드
+function pauseGame() {
+  const background = document.getElementById('gameCanvas');
+
+  if (isPaused) {
+    background.style.opacity = '1';
+    stopButton.textContent = '일시 정지';
+    pauseText.textContent = '';
+    isPaused = false;
+    interval = setInterval(spawnMonster, monsterSpawnInterval);
+    gameLoop();
+  } else {
+    background.style.opacity = '0.5';
+    stopButton.textContent = '계속 하기';
+    pauseText.textContent = '일시 정지';
+    isPaused = true;
+    clearInterval(interval);
+    cancelAnimationFrame(animationId);
+  }
+}

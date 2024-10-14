@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "src/app.js",
   "scripts": {
-    "dev": "nodemon src/app.js"
+    "dev": "nodemon src/app.js",
+    "DB": "node data_DB/csvIntoDB.js"
   },
   "repository": "https://github.com/purebver/Tower_Defense_Game.git",
   "author": "",
@@ -12,6 +13,7 @@
   "dependencies": {
     "@prisma/client": "^5.20.0",
     "bcrypt": "^5.1.1",
+    "csv-parser": "^3.0.0",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "jsonwebtoken": "^9.0.2",
