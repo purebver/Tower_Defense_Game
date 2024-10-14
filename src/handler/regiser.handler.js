@@ -11,13 +11,17 @@ dotenv.config();
 const registerHandler = (io) => {
   io.on('connection', async (socket) => {
     try {
+      //토큰 분리
       const [tokenType, token] = socket.handshake.auth.token.split(' ');
+
+      //토큰 디코드
       const decodedToken = jwt.verify(token, process.env.JWT_KEY);
 
       //토큰에서 id분리
       const accountId = decodedToken.id;
       console.log('accountId: ', accountId);
 
+      //db에서 유저 하이스코어 불러오기
       const userHighScore = await prisma.user.findFirst({
         where: { id: accountId },
         select: {
@@ -25,6 +29,7 @@ const registerHandler = (io) => {
         },
       });
       console.log(userHighScore);
+
       //유저 추가
       addUser({ accountId, socketId: socket.id });
 
@@ -54,6 +59,7 @@ const registerHandler = (io) => {
         console.log('user disconnect');
       });
     } catch (error) {
+      //토큰만료 시
       if (error.name === 'TokenExpiredError') {
         console.error('Token expired at: ', error.expiredAt);
         socket.emit('response', {

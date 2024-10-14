@@ -140,6 +140,7 @@ export const towerAttackHandler = (accountId, data) => {
   return { status: 'success', message: 'attackTowers' };
 };
 
+//타워 판매
 export const towerSellHandler = (accountId, data) => {
   //타워 db데이터
   const { towers } = getData();
@@ -149,16 +150,15 @@ export const towerSellHandler = (accountId, data) => {
   //클라이언트의 타워 id와 같은 db타워 검색
   const dbTower = towers.find((a) => a.towerId === towerId);
 
+  //선택 타워 제거
   deleteTowers(accountId, data.selectedTowerIndex);
 
-  if (!dbTower || !dbTower.towerCost) {
-    return { status: 'fail', message: 'dbTower or towerCost is undefined' };
-  }
-
+  //유저 현재 골드 - 이전 보유 골드 = 타워금액
   if (data.userGold - data.beforeGold !== dbTower.towerCost) {
     return { status: 'fail', message: 'The selling price is strange' };
   }
 
+  //골드 검증
   let isBaseTowerDelete = false;
   if (dbTower.towerId === 100) {
     isBaseTowerDelete = true;
