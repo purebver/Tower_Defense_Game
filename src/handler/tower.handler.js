@@ -16,12 +16,12 @@ export const towerHandler = (accountId, data) => {
   //초기 타워 개수
   startTower = data.numOfInitialTowers;
   // console.log('startTower:', startTower);
-
+  //타워 개수가 초기 개수와 일치하지 않을 경우
   if (currentTower.length !== startTower) {
     return { status: 'fail', message: 'Start Tower Over' };
   }
   //console.log('towerHandler: ', data.tower);
-
+  //골드검증을 위한 카운터
   for (let i = 0; i < startTower; i++) {
     setTowers(accountId, data.towerObj);
   }
@@ -63,7 +63,7 @@ export const towerBuyHandler = (accountId, data) => {
   if (data.currentTower.length - 1 !== getTower.length) {
     return { status: 'fail', message: 'The Number of Towers Is Strange.' };
   }
-
+  //골드 검증을 위한 저장
   setTowers(accountId, data.towerObj);
 
   useMoney(accountId, towerPrice);

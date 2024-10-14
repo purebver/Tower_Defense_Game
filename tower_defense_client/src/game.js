@@ -117,6 +117,7 @@ function baseUpgrade() {
   // console.log('기지ID', baseMaxHp);
   //업그레이드 가능 여부 체크
 
+  //조건이 만족할경우 서버로 데이터를 쏴주는 부분
   if (userGold >= baseData[upgradeIndex].baseUpgradeCost) {
     if (upgradeIndex < baseData.length - 1) {
       serverSocket.emit('event', {
@@ -221,12 +222,14 @@ function placeInitialTowers() {
 }
 
 function placeNewTower() {
+  //기지와 공유하는 인덱스를 담은 변수
   const upgradeTower = towerData[upgradeIndex].towerId;
   const upgradePrice = towerData[upgradeIndex].towerCost;
   // console.log(upgradePrice);
   const towerInfo = towerData.find((a) => a.towerId === upgradeTower);
   // console.log('타워번호', upgradeTower);
 
+  //돈이 없을때 타워구매를 시도한 경우
   if (userGold < towerInfo.towerCost) {
     showMessage(`타워를 구입까지 ${upgradePrice - userGold}Gold 가 더 필요합니다`);
     return;
@@ -389,7 +392,7 @@ function gameLoop() {
           handlerId: 2,
           score,
         });
-        alert('게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ');
+        alert('당신은 못으로 더럽혀졌습니다...');
         location.reload();
       }
       monster.draw(ctx);
@@ -499,6 +502,8 @@ Promise.all([
       location.reload();
     }
   });
+
+  //서버에서 기지강화정보 받아오는 부분
   serverSocket.on('base', (data) => {
     upgradeIndex = data.index;
     userGold = data.gold;
