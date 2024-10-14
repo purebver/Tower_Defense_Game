@@ -20,7 +20,7 @@ let lastSpawnedMonsterId = MIN_MONSTER_ID; // 마지막에 소환된 몬스터 i
 //강화시 체력 / 기본 체력/ 강화비용
 let upgradeIndex = 0; //기지 강화 수치 초기값
 
-let userGold = 20000; // 유저 골드
+let userGold = 5000; // 유저 골드
 let base; // 기지 객체
 let firstHp = 1000; // 시작시 초기 체력
 let baseHp = firstHp; // 기지 체력
@@ -560,7 +560,22 @@ baseUpgradeButton.style.padding = '10px 20px';
 baseUpgradeButton.style.fontSize = '16px';
 baseUpgradeButton.style.cursor = 'pointer';
 
-baseUpgradeButton.addEventListener('click', baseUpgrade);
+baseUpgradeButton.addEventListener('click', () => {
+  if (userGold >= baseData[upgradeIndex].baseUpgradeCost) {
+    if (upgradeIndex < baseData.length - 1) {
+      baseUpgrade();
+      showMessage('기지를 강화합니다!');
+      // placeBase();
+    } else if (
+      (userGold >= baseData[upgradeIndex].baseUpgradeCost && upgradeIndex >= baseData.length - 1) ||
+      (userGold <= baseData[upgradeIndex].baseUpgradeCost && upgradeIndex >= baseData.length - 1)
+    ) {
+      showMessage('이미 기지가 최고단계입니다!');
+    }
+  } else {
+    showMessage('돈이 부족합니다!');
+  }
+});
 
 document.body.appendChild(baseUpgradeButton);
 

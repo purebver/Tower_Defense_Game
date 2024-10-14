@@ -151,6 +151,10 @@ export const towerSellHandler = (accountId, data) => {
 
   deleteTowers(accountId, data.selectedTowerIndex);
 
+  if (!dbTower || !dbTower.towerCost) {
+    return { status: 'fail', message: 'dbTower or towerCost is undefined' };
+  }
+
   if (data.userGold - data.beforeGold !== dbTower.towerCost) {
     return { status: 'fail', message: 'The selling price is strange' };
   }
