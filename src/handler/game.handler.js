@@ -1,7 +1,7 @@
 import { prisma } from '../utils/prisma/prisma.client.js';
 import { clearTowers } from '../models/tower.model.js';
 import { clearMonsters, getMonsters } from '../models/monster.model.js';
-import { clearStage } from '../models/stage.model.js';
+import { clearStage, getStages } from '../models/stage.model.js';
 import { getData } from '../init/data.js';
 
 export const gameStartHandler = (accountId, data) => {
@@ -14,15 +14,19 @@ export const gameStartHandler = (accountId, data) => {
 
 export const gameEndHandler = async (accountId, payload) => {
   try {
-    // monster 처치 목록으로 유저의 점수 구하기
+    // monster 처치 목록
+    const stageInfo = getStages(accountId);
     const monsters = getMonsters(accountId);
     const dbMonsterData = getData().monsters;
 
+    // 처치한 몬스터 목록에서 몬스터의 id만 저장
     const uniqueMonsterIds = [...new Set(monsters.map((monster) => monster.monsterId))];
     console.log('uniqueMonsterIds: ', uniqueMonsterIds);
     let totalScore = 0;
 
+    // 몬스터 처치 목록으로 score 계산
     uniqueMonsterIds.forEach((monsterId) => {
+      // 각 몬스터의 id별로 따로 찾아서 count
       const monsterCount = monsters.filter((monster) => monster.monsterId === monsterId).length;
       const monsterData = dbMonsterData.find((dbMonster) => dbMonster.monsterId === monsterId);
       if (monsterData) {
@@ -30,13 +34,13 @@ export const gameEndHandler = async (accountId, payload) => {
       }
     });
 
-    console.log('totalScore: ', totalScore);
-    console.log('게임이 종료됩니다.');
-
     // 점수 검증
+    console.log('totalScore: ', totalScore);
     if (totalScore !== payload.score) {
       return { status: 'failed', message: 'Score unmatched' };
     }
+
+    console.log('게임이 종료됩니다.');
 
     // 유저 정보 검색
     const userInfo = await prisma.user.findUnique({
@@ -47,7 +51,7 @@ export const gameEndHandler = async (accountId, payload) => {
     await prisma.gameScore.create({
       data: {
         userId: userInfo.id,
-        level: 1, // 임시
+        level: stageInfo.level, // 임시
         score: totalScore,
         endTime: new Date(),
       },

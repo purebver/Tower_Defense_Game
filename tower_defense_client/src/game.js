@@ -281,10 +281,12 @@ function placeBase() {
 }
 
 function spawnMonster() {
+  // 보스가 등장해있거나, 보스가 등장할 점수가 되었는데 일반 몬스터가 남아있다면 소환하지 않음
   if (isBossSpawned || (score >= bossSpawnScore && monsters.length > 0)) {
     return;
   }
 
+  // 보스가 등장할 점수가 달성됐다면 보스 소환
   if (score >= bossSpawnScore && monsters.length === 0) {
     spawnBossMonster();
     return;
@@ -292,17 +294,22 @@ function spawnMonster() {
 
   let mobId;
   if (monsterLevel === 0) {
+    // 첫 스테이지에서는 한 종류의 몬스터만 소환
     mobId = MIN_MONSTER_ID;
   } else {
-    // 이전에 생성된 몬스터와 다른 ID를 선택
+    /* 이전에 생성된 몬스터와 다른 ID를 선택
+       두 종류의 몬스터가 번갈아가면서 등장하도록 함 */
     const lowerMobId = MIN_MONSTER_ID + monsterLevel - 1;
     const higherMobId = MIN_MONSTER_ID + monsterLevel;
     mobId = lastSpawnedMonsterId === lowerMobId ? higherMobId : lowerMobId;
   }
   lastSpawnedMonsterId = mobId;
+  // 10%의 확률로 황금 고블린이 등장
   if (Math.random() < 0.1) {
     mobId = 400 + monsterLevel;
   }
+
+  // 결정된 몬스터의 id로 몬스터 정보 저장
   const monsterInfo = monsterData.find((a) => a.monsterId === mobId);
   console.log('monsterInfo: ', monsterInfo);
   monsters.push(new Monster(monsterPath, monsterInfo));
@@ -312,12 +319,15 @@ function spawnMonster() {
   });
 }
 
+// 보스 몬스터 소환
 function spawnBossMonster() {
   if (!bossMonsterInfo) {
+    // 보스 정보가 없다면 리턴
     console.error('Boss monster info not found');
     return;
   }
 
+  // 보스의 정보 생성, 보스를 처치한 만큼 level과 HP 변경
   const bossMultiplierInfo = {
     ...bossMonsterInfo,
     monsterHp: bossMonsterInfo.monsterHp * bossMultiplier,
@@ -327,6 +337,7 @@ function spawnBossMonster() {
   console.log('bossMultiplierInfo: ', bossMultiplierInfo);
   monsters.push(new Monster(monsterPath, bossMultiplierInfo));
 
+  // 보스 몬스터 등장 표시
   isBossSpawned = true;
 
   serverSocket.emit('event', {
@@ -394,9 +405,11 @@ function gameLoop() {
       }
       monster.draw(ctx);
     } else if (monster.hp < -9000) {
+      /* 몬스터 기지 공격 */
       if (monster.monsterId === BOSS_MONSTER_ID) {
+        // 보스가 기지를 공격하고 사라졌다면 체력이 배가 되지 않음
         isBossSpawned = false;
-        bossSpawnScore += BOSS_SPAWN_PERIOD;
+        bossSpawnScore += BOSS_SPAWN_PERIOD; // 다음 보스가 등장하는 점수 설정
       }
       monsters.splice(i, 1);
     } else {
@@ -414,9 +427,10 @@ function gameLoop() {
       });
 
       if (monster.monsterId === BOSS_MONSTER_ID) {
-        bossMultiplier *= 2;
+        /* 보스 몬스터를 처치했을 경우 */
+        bossMultiplier *= 2; // 다음 보스 체력 x2
         isBossSpawned = false;
-        bossSpawnScore += BOSS_SPAWN_PERIOD;
+        bossSpawnScore += BOSS_SPAWN_PERIOD; // 다음 보스가 등장하는 점수 설정
       }
       monsters.splice(i, 1);
     }
@@ -432,7 +446,7 @@ function gameLoop() {
         nextLevel: monsterLevel + 1,
         clientUserGold: userGold,
       });
-      monsterLevel += 1;
+      monsterLevel += 1; // 몬스터 레벨 증가
       console.log('level up');
     }
   }
