@@ -222,11 +222,13 @@ function placeInitialTowers() {
 
 function placeNewTower() {
   const upgradeTower = towerData[upgradeIndex].towerId;
+  const upgradePrice = towerData[upgradeIndex].towerCost;
+  console.log(upgradePrice);
   const towerInfo = towerData.find((a) => a.towerId === upgradeTower);
   console.log('타워번호', upgradeTower);
 
   if (userGold < towerInfo.towerCost) {
-    showMessage('타워를 구입하기위한 비용이 부족합니다.');
+    showMessage(`타워를 구입까지 ${upgradePrice - userGold}Gold 가 더 필요합니다`);
     return;
   }
 
@@ -542,7 +544,8 @@ sellTowerButton.style.cursor = 'pointer';
 sellTowerButton.addEventListener('click', () => {
   const sellTowers = sellTower();
   if (sellTowers) {
-    showMessage('타워를 판매했습니다.');
+    const sellTowerPrice = towerData[upgradeIndex].towerCost;
+    showMessage(`타워를 판매해 ${sellTowerPrice}Gold를 획득했습니다..`);
   } else {
     showMessage('타워를 지정해주세요');
   }
@@ -574,7 +577,8 @@ baseUpgradeButton.addEventListener('click', () => {
       showMessage('이미 기지가 최고단계입니다!');
     }
   } else {
-    showMessage('돈이 부족합니다!');
+    const baseUpgradePrice = baseData[upgradeIndex].baseUpgradeCost;
+    showMessage(`기지 강화는 ${baseUpgradePrice - userGold}Gold 가 더 필요합니다.`);
   }
 });
 
@@ -604,7 +608,7 @@ function showMessage(message) {
   messageBox.style.transform = 'translateX(-50%)'; //x축 -50% 해서 가운데로
   messageBox.style.backgroundColor = 'transparent'; // 배경 투명하게
   messageBox.style.fontSize = '60px';
-  messageBox.style.color = 'black';
+  messageBox.style.color = 'white';
   messageBox.style.padding = '10px';
   messageBox.style.borderRadius = '5px';
   messageBox.style.zIndex = 10000; //다른 요소 위에 표시되도록 하는거
