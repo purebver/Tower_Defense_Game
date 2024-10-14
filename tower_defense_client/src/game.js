@@ -559,6 +559,14 @@ baseUpgradeButton.addEventListener('click', baseUpgrade);
 
 document.body.appendChild(baseUpgradeButton);
 
+//일시정지 텍스트
+const pauseText = document.createElement('text');
+pauseText.textContent = '';
+pauseText.style.position = 'absolute';
+pauseText.style.top = '50%';
+pauseText.style.right = '45%';
+pauseText.style.fontSize = '60px';
+document.body.appendChild(pauseText);
 /**
  * @author 우종
  * @todo 버튼 키보드로 누르게 하는게 편해보임 z,x,c에 할당해주고싶음
@@ -627,13 +635,19 @@ canvas.addEventListener('click', (coordinate) => {
 
 // 게임 일시정지 메서드
 function pauseGame() {
+  const background = document.getElementById('gameCanvas');
+
   if (isPaused) {
+    background.style.opacity = '1';
     stopButton.textContent = '일시 정지';
+    pauseText.textContent = '';
     isPaused = false;
     interval = setInterval(spawnMonster, monsterSpawnInterval);
     gameLoop();
   } else {
+    background.style.opacity = '0.5';
     stopButton.textContent = '계속 하기';
+    pauseText.textContent = '일시 정지';
     isPaused = true;
     clearInterval(interval);
     cancelAnimationFrame(animationId);
