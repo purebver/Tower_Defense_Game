@@ -35,7 +35,7 @@ let selectedTowerIndex = null; //선택된 타워 index
 let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 3; // 초기 타워 개수
 let monsterLevel = 0; // 몬스터 레벨
-let monsterSpawnInterval = 2000; // 몬스터 생성 주기
+let monsterSpawnInterval; // 몬스터 생성 주기
 
 /* 보스 몬스터 */
 const BOSS_SPAWN_PERIOD = 5000;
@@ -70,6 +70,11 @@ pathImage.src = 'images/path.png';
 // }
 
 let monsterPath;
+// 몬스터 생성 주기 세팅
+function setMonsterInterval() {
+  const monsterInfo = monsterData.find((a) => a.monsterId === MIN_MONSTER_ID);
+  monsterSpawnInterval = monsterInfo.spawnTime;
+}
 
 function generateRandomMonsterPath() {
   const path = [];
@@ -469,7 +474,7 @@ function initGame() {
   initMap(); // 맵 초기화 (배경, 몬스터 경로 그리기)
   placeBase(); // 기지 배치
   bossMonsterInfo = monsterData.find((a) => a.monsterId === BOSS_MONSTER_ID); // 보스 몬스터 정보 불러오기
-
+  setMonsterInterval(); // 몬스터 생성 주기 설정
   interval = setInterval(spawnMonster, monsterSpawnInterval); // 설정된 몬스터 생성 주기마다 몬스터 생성
   gameLoop(); // 게임 루프 최초 실행
   isInitGame = true;
