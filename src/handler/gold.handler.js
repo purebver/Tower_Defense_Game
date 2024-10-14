@@ -16,10 +16,8 @@ export const goldCalculate = (currentTower, monsterGold, baseUpgradeArr) => {
   // 구매한 타워 총 가격
   let totalTowerGold = 0;
 
-  //console.log('----------------------');
   for (let i = numOfInitialTowers; i < currentTower.length; i++) {
     const towerInfo = getData().towers.find((a) => a.towerId === currentTower[i]);
-    //console.log('id: ', towerInfo.towerId, ' cost: ', towerInfo.towerCost);
     totalTowerGold += towerInfo.towerCost;
   }
 
