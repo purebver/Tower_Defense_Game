@@ -14,61 +14,100 @@ async function readCSV(filePath) {
   });
 }
 
-// CSV 파일 읽기 (stage와 tower 데이터)
+// 데이터 삽입/업데이트/삭제를 처리하는 일반 함수
+// dbData: DB에서 읽어온 데이터
+// csvData: CSV 파일에서 읽은 데이터
+// idField: 각 모델의 고유 식별자 속성
+// modelName: Prisma에서 사용할 모델 이름
+// fieldsToUpdate: 업데이트할 속성 목록
+async function upsertData({ dbData, csvData, idField, modelName, fieldsToUpdate }) {
+  // CSV에서 가져온 데이터의 고유 ID 저장
+  const csvIds = csvData.map((item) => parseInt(item[idField], 10));
+  // DB에서 가져온 데이터의 고유 ID 저장
+  const dbIds = dbData.map((item) => item[idField]);
+
+  // CSV에 없는 DB 데이터를 삭제
+  const deleteIds = dbIds.filter((id) => !csvIds.includes(id));
+  if (0 < deleteIds.length) {
+    console.log(`삭제할 ${modelName} ID 목록: ${deleteIds.join(', ')}`);
+    await prisma[modelName].deleteMany({
+      where: {
+        [idField]: { in: deleteIds },
+      },
+    });
+  } else {
+    console.log(`삭제할 ${modelName} 데이터가 없습니다.`);
+  }
+
+  // CSV 데이터를 처리
+  const promiseAll = [];
+  for (let i = 0; i < csvData.length; i++) {
+    const currentData = csvData[i];
+    const currentId = parseInt(currentData[idField], 10); // 현재 데이터의 ID
+    const dbRecord = dbData.find((item) => item[idField] === currentId); // DB에서 같은 ID 찾기
+
+    const updateData = {};
+    fieldsToUpdate.forEach((field) => {
+      if (typeof currentData[field] === 'string' && field !== 'img') {
+        updateData[field] = parseInt(currentData[field], 10); // String을 Int로 변환
+      } else {
+        updateData[field] = currentData[field]; // 문자열 데이터는 그대로 유지
+      }
+    });
+
+    if (dbRecord) {
+      // 업데이트할 필요가 있는지 확인
+      let needsUpdate = false;
+      for (const field of fieldsToUpdate) {
+        if (dbRecord[field] !== updateData[field]) {
+          needsUpdate = true;
+          break;
+        }
+      }
+
+      if (needsUpdate) {
+        console.log(`${modelName} ${currentId} 업데이트!!!!`);
+        const promise = prisma[modelName].update({
+          data: updateData,
+          where: { [idField]: currentId },
+        });
+        promiseAll.push(promise);
+      }
+    } else {
+      // DB에 없으면 새로 삽입
+      console.log(`${currentId} 삽입`);
+      const promise = prisma[modelName].create({
+        data: {
+          [idField]: currentId,
+          ...updateData,
+        },
+      });
+      promiseAll.push(promise);
+    }
+  }
+
+  // 모든 DB 작업 실행
+  await Promise.all(promiseAll);
+}
+
+// CSV 파일 읽기
 const stageDataJson = await readCSV('./data_DB/csv_file/stage_data.csv');
 const towerDataJson = await readCSV('./data_DB/csv_file/tower_data.csv');
 const monsterDataJson = await readCSV('./data_DB/csv_file/monster_data.csv');
 
 // Stage 데이터 처리
-const excelStageId = stageDataJson.map((item) => parseInt(item['stageId'], 10));
 const dbStageData = await prisma.stage.findMany({
   select: { stageId: true, stageStartScore: true },
 });
-const dbStageId = dbStageData.map((item) => item.stageId);
-
-// CSV에 없는 스테이지가 DB에 있는지 확인하고 삭제 처리
-const deleteStage = dbStageId.filter((stageId) => !excelStageId.includes(stageId));
-if (0 < deleteStage.length) {
-  console.log('삭제할 스테이지 ID 목록: ' + deleteStage.join(', '));
-  await prisma.stage.deleteMany({
-    where: {
-      stageId: { in: deleteStage },
-    },
-  });
-} else {
-  console.log('삭제할 스테이지가 없습니다.');
-}
-
-const promiseAllStages = [];
-for (let i = 0; i < stageDataJson.length; i++) {
-  const currentStage = stageDataJson[i];
-  const stageIdInt = parseInt(currentStage['stageId'], 10);
-  const stageStartScoreInt = parseInt(currentStage['stageStartScore'], 10);
-  const isStageInDb = dbStageData.find((stage) => stage.stageId === stageIdInt);
-
-  if (isStageInDb) {
-    if (isStageInDb.stageStartScore !== stageStartScoreInt) {
-      console.log(`스테이지 ${stageIdInt} 업데이트!!!!`);
-      const promise = prisma.stage.update({
-        data: { stageStartScore: stageStartScoreInt },
-        where: { stageId: stageIdInt },
-      });
-      promiseAllStages.push(promise);
-    }
-  } else {
-    console.log(`${stageIdInt} 삽입`);
-    const promise = prisma.stage.create({
-      data: {
-        stageId: stageIdInt,
-        stageStartScore: stageStartScoreInt,
-      },
-    });
-    promiseAllStages.push(promise);
-  }
-}
+await upsertData({
+  dbData: dbStageData,
+  csvData: stageDataJson,
+  idField: 'stageId',
+  modelName: 'stage',
+  fieldsToUpdate: ['stageStartScore'],
+});
 
 // Tower 데이터 처리
-const excelTowerId = towerDataJson.map((item) => parseInt(item['towerId'], 10));
 const dbTowerData = await prisma.tower.findMany({
   select: {
     towerId: true,
@@ -79,71 +118,15 @@ const dbTowerData = await prisma.tower.findMany({
     img: true,
   },
 });
-const dbTowerId = dbTowerData.map((item) => item.towerId);
-
-// CSV에 없는 타워가 DB에 있는지 확인하고 삭제 처리
-const deleteTower = dbTowerId.filter((towerId) => !excelTowerId.includes(towerId));
-if (0 < deleteTower.length) {
-  console.log('삭제할 타워 ID 목록: ' + deleteTower.join(', '));
-  await prisma.tower.deleteMany({
-    where: {
-      towerId: { in: deleteTower },
-    },
-  });
-} else {
-  console.log('삭제할 타워가 없습니다.');
-}
-
-const promiseAllTowers = [];
-for (let i = 0; i < towerDataJson.length; i++) {
-  const currentTower = towerDataJson[i];
-  const towerIdInt = parseInt(currentTower['towerId'], 10);
-  const towerCostInt = parseInt(currentTower['towerCost'], 10);
-  const towerAttackInt = parseInt(currentTower['towerAttack'], 10);
-  const towerSpeedInt = parseInt(currentTower['towerSpeed'], 10);
-  const towerRangeInt = parseInt(currentTower['towerRange'], 10);
-
-  const isTowerInDb = dbTowerData.find((tower) => tower.towerId === towerIdInt);
-
-  if (isTowerInDb) {
-    if (
-      isTowerInDb.towerCost !== towerCostInt ||
-      isTowerInDb.towerAttack !== towerAttackInt ||
-      isTowerInDb.towerSpeed !== towerSpeedInt ||
-      isTowerInDb.towerRange !== towerRangeInt ||
-      isTowerInDb.img !== currentTower['img']
-    ) {
-      console.log(`타워 ${towerIdInt} 업데이트!!!!`);
-      const promise = prisma.tower.update({
-        data: {
-          towerCost: towerCostInt,
-          towerAttack: towerAttackInt,
-          towerSpeed: towerSpeedInt,
-          towerRange: towerRangeInt,
-          img: currentTower['img'],
-        },
-        where: { towerId: towerIdInt },
-      });
-      promiseAllTowers.push(promise);
-    }
-  } else {
-    console.log(`${towerIdInt} 삽입`);
-    const promise = prisma.tower.create({
-      data: {
-        towerId: towerIdInt,
-        towerCost: towerCostInt,
-        towerAttack: towerAttackInt,
-        towerSpeed: towerSpeedInt,
-        towerRange: towerRangeInt,
-        img: currentTower['img'],
-      },
-    });
-    promiseAllTowers.push(promise);
-  }
-}
+await upsertData({
+  dbData: dbTowerData,
+  csvData: towerDataJson,
+  idField: 'towerId',
+  modelName: 'tower',
+  fieldsToUpdate: ['towerCost', 'towerAttack', 'towerSpeed', 'towerRange', 'img'],
+});
 
 // Monster 데이터 처리
-const excelMonsterId = monsterDataJson.map((item) => parseInt(item['monsterId'], 10));
 const dbMonsterData = await prisma.monster.findMany({
   select: {
     monsterId: true,
@@ -157,89 +140,22 @@ const dbMonsterData = await prisma.monster.findMany({
     monsterMoveSpeed: true,
   },
 });
-const dbMonsterId = dbMonsterData.map((item) => item.monsterId);
-
-// CSV에 없는 몬스터가 DB에 있는지 확인하고 삭제 처리
-const deleteMonster = dbMonsterId.filter((monsterId) => !excelMonsterId.includes(monsterId));
-if (0 < deleteMonster.length) {
-  console.log('삭제할 몬스터 ID 목록: ' + deleteMonster.join(', '));
-  await prisma.monster.deleteMany({
-    where: {
-      monsterId: { in: deleteMonster },
-    },
-  });
-} else {
-  console.log('삭제할 몬스터가 없습니다.');
-}
-
-const promiseAllMonster = [];
-for (let i = 0; i < monsterDataJson.length; i++) {
-  const currentMonster = monsterDataJson[i];
-  const monsterIdInt = parseInt(currentMonster['monsterId'], 10);
-  const monsterLevelInt = parseInt(currentMonster['level'], 10);
-  const monsterHpInt = parseInt(currentMonster['monsterHp'], 10);
-  const monsterAttackInt = parseInt(currentMonster['monsterAttack'], 10);
-  const monsterSpawnTimeInt = parseInt(currentMonster['spawnTime'], 10);
-  const monsterGoldInt = parseInt(currentMonster['monsterGold'], 10);
-  const monsterScoreInt = parseInt(currentMonster['monsterScore'], 10);
-  const monsterMoveSpeednt = parseInt(currentMonster['monsterMoveSpeed'], 10);
-
-  const isMonsterInDb = dbMonsterData.find((monster) => monster.monsterId === monsterIdInt);
-  if (isMonsterInDb) {
-    if (
-      isMonsterInDb.level !== monsterLevelInt ||
-      isMonsterInDb.monsterHp !== monsterHpInt ||
-      isMonsterInDb.monsterAttack !== monsterAttackInt ||
-      isMonsterInDb.spawnTime !== monsterSpawnTimeInt ||
-      isMonsterInDb.monsterGold !== monsterGoldInt ||
-      isMonsterInDb.monsterScore !== monsterScoreInt ||
-      isMonsterInDb.monsterMoveSpeed !== monsterMoveSpeednt ||
-      isMonsterInDb.img !== currentMonster['img']
-    ) {
-      console.log(`몬스터 ${monsterIdInt} 업데이트!!!`);
-      const promise = prisma.monster.update({
-        data: {
-          level: monsterLevelInt,
-          monsterHp: monsterHpInt,
-          monsterAttack: monsterAttackInt,
-          spawnTime: monsterSpawnTimeInt,
-          monsterGold: monsterGoldInt,
-          monsterScore: monsterScoreInt,
-          monsterMoveSpeed: monsterMoveSpeednt,
-          img: currentMonster['img'],
-        },
-        where: { monsterId: monsterIdInt },
-      });
-      promiseAllMonster.push(promise);
-    }
-  } else {
-    console.log(`${monsterIdInt} 삽입`);
-    const promise = prisma.monster.create({
-      data: {
-        monsterId: monsterIdInt,
-        level: monsterLevelInt,
-        monsterHp: monsterHpInt,
-        monsterAttack: monsterAttackInt,
-        spawnTime: monsterSpawnTimeInt,
-        monsterGold: monsterGoldInt,
-        monsterScore: monsterScoreInt,
-        monsterMoveSpeed: monsterMoveSpeednt,
-        img: currentMonster['img'],
-      },
-    });
-    promiseAllMonster.push(promise);
-  }
-}
+await upsertData({
+  dbData: dbMonsterData,
+  csvData: monsterDataJson,
+  idField: 'monsterId',
+  modelName: 'monster',
+  fieldsToUpdate: [
+    'level',
+    'monsterHp',
+    'monsterAttack',
+    'spawnTime',
+    'monsterGold',
+    'monsterScore',
+    'monsterMoveSpeed',
+    'img',
+  ],
+});
 
 // 모든 Promise 완료 처리
-const results = await Promise.allSettled([
-  ...promiseAllStages,
-  ...promiseAllTowers,
-  ...promiseAllMonster,
-]);
-
-results.forEach((result, index) => {
-  if (result.status === 'rejected') {
-    console.log(`작업 ${index}: 실패`, result.reason);
-  }
-});
+console.log('모든 데이터 처리가 완료되었습니다.');

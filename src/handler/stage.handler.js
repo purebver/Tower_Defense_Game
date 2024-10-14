@@ -39,6 +39,7 @@ export const moveStageHandler = async (accountId, payload) => {
 
     const clientGold = payload.clientUserGold;
     const baseUpgrade = getBaseUpgrade(accountId);
+    // 몬스터 처치 시 얻는 골드는 여기서 계산...
     const serverGold = goldCalculate(getTowers(accountId), totalGold, baseUpgrade);
     console.log('clientGold: ', clientGold);
     console.log('serverGold: ', serverGold);
