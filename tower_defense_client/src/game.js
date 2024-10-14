@@ -472,11 +472,12 @@ Promise.all([
       token: somewhere, // 토큰이 저장된 어딘가에서 가져와야 합니다!
     },
   });
-  serverSocket.on('datainfo', async ({ towers, monsters, stages, bases }) => {
+  serverSocket.on('datainfo', async ({ towers, monsters, stages, bases, userHighScore }) => {
     towerData.push(...towers);
     monsterData.push(...monsters);
     stageData.push(...stages);
     baseData.push(...bases);
+    highScore = userHighScore;
     console.log('datainfo get');
     if (!isInitGame) {
       initGame();
@@ -488,7 +489,7 @@ Promise.all([
   serverSocket.on('response', (data) => {
     console.log(data);
     if (data.error) {
-      alert('오류 발생');
+      alert(data.message);
       location.reload();
     }
   });
