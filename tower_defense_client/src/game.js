@@ -226,7 +226,7 @@ function placeNewTower() {
   console.log('타워번호', upgradeTower);
 
   if (userGold < towerInfo.towerCost) {
-    alert('message: 타워 구입에 필요한 금액이 부족합니다.');
+    showMessage('타워를 구입하기위한 비용이 부족합니다.');
     return;
   }
 
@@ -261,6 +261,7 @@ function placeNewTower() {
     handlerId: 33,
     tower: tower,
   });
+  showMessage('타워를 설치했습니다.');
   console.log(tower);
 }
 
@@ -602,6 +603,7 @@ function showMessage(message) {
   messageBox.style.left = '50%';
   messageBox.style.transform = 'translateX(-50%)'; //x축 -50% 해서 가운데로
   messageBox.style.backgroundColor = 'transparent'; // 배경 투명하게
+  messageBox.style.fontSize = '60px';
   messageBox.style.color = 'black';
   messageBox.style.padding = '10px';
   messageBox.style.borderRadius = '5px';
