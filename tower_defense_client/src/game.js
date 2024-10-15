@@ -35,7 +35,7 @@ let selectedTowerIndex = null; //선택된 타워 index
 let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 3; // 초기 타워 개수
 let monsterLevel = 0; // 몬스터 레벨
-let monsterSpawnInterval = 2000; // 몬스터 생성 주기
+let monsterSpawnInterval; // 몬스터 생성 주기
 
 /* 보스 몬스터 */
 const BOSS_SPAWN_PERIOD = 5000;
@@ -70,6 +70,11 @@ pathImage.src = 'images/path.png';
 // }
 
 let monsterPath;
+// 몬스터 생성 주기 세팅
+function setMonsterInterval() {
+  const monsterInfo = monsterData.find((a) => a.monsterId === MIN_MONSTER_ID);
+  monsterSpawnInterval = monsterInfo.spawnTime;
+}
 
 function generateRandomMonsterPath() {
   const path = [];
@@ -117,6 +122,7 @@ function baseUpgrade() {
   // console.log('기지ID', baseMaxHp);
   //업그레이드 가능 여부 체크
 
+  //조건이 만족할경우 서버로 데이터를 쏴주는 부분
   if (userGold >= baseData[upgradeIndex].baseUpgradeCost) {
     if (upgradeIndex < baseData.length - 1) {
       serverSocket.emit('event', {
@@ -221,12 +227,14 @@ function placeInitialTowers() {
 }
 
 function placeNewTower() {
+  //기지와 공유하는 인덱스를 담은 변수
   const upgradeTower = towerData[upgradeIndex].towerId;
   const upgradePrice = towerData[upgradeIndex].towerCost;
   // console.log(upgradePrice);
   const towerInfo = towerData.find((a) => a.towerId === upgradeTower);
   // console.log('타워번호', upgradeTower);
 
+  //돈이 없을때 타워구매를 시도한 경우
   if (userGold < towerInfo.towerCost) {
     showMessage(`타워를 구입까지 ${upgradePrice - userGold}Gold 가 더 필요합니다`);
     return;
@@ -281,10 +289,12 @@ function placeBase() {
 }
 
 function spawnMonster() {
+  // 보스가 등장해있거나, 보스가 등장할 점수가 되었는데 일반 몬스터가 남아있다면 소환하지 않음
   if (isBossSpawned || (score >= bossSpawnScore && monsters.length > 0)) {
     return;
   }
 
+  // 보스가 등장할 점수가 달성됐다면 보스 소환
   if (score >= bossSpawnScore && monsters.length === 0) {
     spawnBossMonster();
     return;
@@ -292,17 +302,22 @@ function spawnMonster() {
 
   let mobId;
   if (monsterLevel === 0) {
+    // 첫 스테이지에서는 한 종류의 몬스터만 소환
     mobId = MIN_MONSTER_ID;
   } else {
-    // 이전에 생성된 몬스터와 다른 ID를 선택
+    /* 이전에 생성된 몬스터와 다른 ID를 선택
+       두 종류의 몬스터가 번갈아가면서 등장하도록 함 */
     const lowerMobId = MIN_MONSTER_ID + monsterLevel - 1;
     const higherMobId = MIN_MONSTER_ID + monsterLevel;
     mobId = lastSpawnedMonsterId === lowerMobId ? higherMobId : lowerMobId;
   }
   lastSpawnedMonsterId = mobId;
+  // 10%의 확률로 황금 고블린이 등장
   if (Math.random() < 0.1) {
     mobId = 400 + monsterLevel;
   }
+
+  // 결정된 몬스터의 id로 몬스터 정보 저장
   const monsterInfo = monsterData.find((a) => a.monsterId === mobId);
   console.log('monsterInfo: ', monsterInfo);
   monsters.push(new Monster(monsterPath, monsterInfo));
@@ -312,12 +327,15 @@ function spawnMonster() {
   });
 }
 
+// 보스 몬스터 소환
 function spawnBossMonster() {
   if (!bossMonsterInfo) {
+    // 보스 정보가 없다면 리턴
     console.error('Boss monster info not found');
     return;
   }
 
+  // 보스의 정보 생성, 보스를 처치한 만큼 level과 HP 변경
   const bossMultiplierInfo = {
     ...bossMonsterInfo,
     monsterHp: bossMonsterInfo.monsterHp * bossMultiplier,
@@ -327,6 +345,7 @@ function spawnBossMonster() {
   console.log('bossMultiplierInfo: ', bossMultiplierInfo);
   monsters.push(new Monster(monsterPath, bossMultiplierInfo));
 
+  // 보스 몬스터 등장 표시
   isBossSpawned = true;
 
   serverSocket.emit('event', {
@@ -390,14 +409,16 @@ function gameLoop() {
           handlerId: 2,
           score,
         });
-        alert('게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ');
+        alert('당신은 못으로 더럽혀졌습니다...');
         location.reload();
       }
       monster.draw(ctx);
     } else if (monster.hp < -9000) {
+      /* 몬스터 기지 공격 */
       if (monster.monsterId === BOSS_MONSTER_ID) {
+        // 보스가 기지를 공격하고 사라졌다면 체력이 배가 되지 않음
         isBossSpawned = false;
-        bossSpawnScore += BOSS_SPAWN_PERIOD;
+        bossSpawnScore += BOSS_SPAWN_PERIOD; // 다음 보스가 등장하는 점수 설정
       }
       monsters.splice(i, 1);
     } else {
@@ -415,9 +436,10 @@ function gameLoop() {
       });
 
       if (monster.monsterId === BOSS_MONSTER_ID) {
-        bossMultiplier *= 2;
+        /* 보스 몬스터를 처치했을 경우 */
+        bossMultiplier *= 2; // 다음 보스 체력 x2
         isBossSpawned = false;
-        bossSpawnScore += BOSS_SPAWN_PERIOD;
+        bossSpawnScore += BOSS_SPAWN_PERIOD; // 다음 보스가 등장하는 점수 설정
       }
       monsters.splice(i, 1);
     }
@@ -433,7 +455,7 @@ function gameLoop() {
         nextLevel: monsterLevel + 1,
         clientUserGold: userGold,
       });
-      monsterLevel += 1;
+      monsterLevel += 1; // 몬스터 레벨 증가
       console.log('level up');
     }
   }
@@ -453,7 +475,7 @@ function initGame() {
   initMap(); // 맵 초기화 (배경, 몬스터 경로 그리기)
   placeBase(); // 기지 배치
   bossMonsterInfo = monsterData.find((a) => a.monsterId === BOSS_MONSTER_ID); // 보스 몬스터 정보 불러오기
-
+  setMonsterInterval(); // 몬스터 생성 주기 설정
   interval = setInterval(spawnMonster, monsterSpawnInterval); // 설정된 몬스터 생성 주기마다 몬스터 생성
   gameLoop(); // 게임 루프 최초 실행
   isInitGame = true;
@@ -500,6 +522,8 @@ Promise.all([
       location.reload();
     }
   });
+
+  //서버에서 기지강화정보 받아오는 부분
   serverSocket.on('base', (data) => {
     upgradeIndex = data.index;
     userGold = data.gold;
@@ -707,18 +731,20 @@ function pauseGame() {
   const background = document.getElementById('gameCanvas');
 
   if (isPaused) {
-    background.style.opacity = '1';
+    // 이미 Pause 상태인 경우
+    background.style.opacity = '1'; // 배경 불투명도 1로 수정
     stopButton.textContent = '일시 정지';
     pauseText.textContent = '';
     isPaused = false;
-    interval = setInterval(spawnMonster, monsterSpawnInterval);
-    gameLoop();
+    interval = setInterval(spawnMonster, monsterSpawnInterval); // 몬스터 스폰 인터벌 재 설정
+    gameLoop(); // 게임 루프 다시 실행
   } else {
-    background.style.opacity = '0.5';
+    // Pause 상태가 아닌 경우
+    background.style.opacity = '0.5'; // 배경 불투명도 0.5로 수정(반투명)
     stopButton.textContent = '계속 하기';
     pauseText.textContent = '일시 정지';
     isPaused = true;
-    clearInterval(interval);
-    cancelAnimationFrame(animationId);
+    clearInterval(interval); // 몬스터 스폰 인터벌 중단
+    cancelAnimationFrame(animationId); // 게임 루프가 도는것을 멈춤
   }
 }
