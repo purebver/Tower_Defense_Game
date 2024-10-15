@@ -402,15 +402,17 @@ function gameLoop() {
     const monster = monsters[i];
     if (monster.hp > 0) {
       const isDestroyed = monster.move(base);
-
       if (isDestroyed) {
         /* 게임 오버 */
-        serverSocket.emit('event', {
-          handlerId: 2,
-          score,
-        });
-        alert('당신은 못으로 더럽혀졌습니다...');
-        location.reload();
+        base.draw(ctx);
+        setTimeout(() => {
+          serverSocket.emit('event', {
+            handlerId: 2,
+            score,
+          });
+          alert('당신은 못으로 더럽혀졌습니다...');
+          location.reload();
+        }, 18);
       }
       monster.draw(ctx);
     } else if (monster.hp < -9000) {
@@ -427,7 +429,7 @@ function gameLoop() {
        * @author 민석
        * @abstract 몬스터가 죽었을때 DB에 저장되어있는 몬스터 ID에 해당된 골드, 점수 ++
        */
-      
+
       userGold += monster.monsterGold; // 몬스터가 주는 골드 추가
       score += monster.monsterScore; // 몬스터가 주는 점수 추가
       console.log(monster);

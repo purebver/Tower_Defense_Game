@@ -152,7 +152,7 @@ export const towerAttackHandler = (accountId, data) => {
   }
   //몬스터가 공격받고 잃어버린 체력
   const lostHp = data.beforeHp - monster.hp;
-  //타워 공격력 검증n
+  //타워 공격력 검증
   if (tower.attackPower !== dbTower.towerAttack) {
     return { status: 'fail', message: 'attackpower' };
   }
