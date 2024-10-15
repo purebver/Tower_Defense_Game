@@ -1,6 +1,7 @@
 import { getData } from '../init/data.js';
 import { getStages, addMoney, useMoney } from '../models/stage.model.js';
 import { deleteTowers, getTowers, setTowers } from '../models/tower.model.js';
+import { deleteCooldown, getCooldown, setCooldown } from '../models/towerCooldown.model.js';
 import { baseTowerDelete } from './gold.handler.js';
 
 /**
@@ -21,9 +22,11 @@ export const towerHandler = (accountId, data) => {
     return { status: 'fail', message: 'Start Tower Over' };
   }
   //console.log('towerHandler: ', data.tower);
-  //골드검증을 위한 카운터
+
+  //골드검증, 공격 쿨다운 검증
   for (let i = 0; i < startTower; i++) {
     setTowers(accountId, data.towerObj);
+    setCooldown(accountId, time);
   }
   // console.log('tower', data.tower);
 
@@ -65,6 +68,10 @@ export const towerBuyHandler = (accountId, data) => {
   }
   //골드 검증을 위한 저장
   setTowers(accountId, data.towerObj);
+
+  //타워 공격 cooldown 검증을 위한 시간 세팅
+  const time = 0;
+  setCooldown(accountId, time);
 
   useMoney(accountId, towerPrice);
 
@@ -115,6 +122,14 @@ export const towerStatsHandler = (accountId, data) => {
 export const towerAttackHandler = (accountId, data) => {
   //타워 db데이터
   const { towers } = getData();
+  //모든 타워 이전 공격 시간
+  const brforeTimearr = getCooldown(accountId);
+  //타워 index
+  const index = data.index;
+  //현 타워의 이전 공격 시간
+  const beforeTime = brforeTimearr[index];
+  //현재 시간
+  const nowTime = Date.now();
   //클라이언트의 타워
   const tower = data.tower;
   //클라이언트의 타워 id와 같은 db타워 검색
@@ -123,6 +138,15 @@ export const towerAttackHandler = (accountId, data) => {
   const monster = data.monster;
   //클라이언트의 타워와 공격받은 몬스터 거리
   const distance = Math.sqrt(Math.pow(tower.x - monster.x, 2) + Math.pow(tower.y - monster.y, 2));
+  //타워 공격 Cooldown검증
+  //프레임을 밀리초로
+  const oneframe = 1000 / 60;
+  //db에 저장된 타워의 공격속도 프레임을 시간으로 환산
+  const cooldown = dbTower.towerSpeed * oneframe;
+  //현시간 - 이전시간이 cooldown보다 작을 경우 문제 있음
+  if (nowTime - beforeTime < cooldown) {
+    return { status: 'fail', message: 'attackCooldown' };
+  }
   //클라이언트의 타워 공격사거리와 db타워의 사거리와 비교 검증
   if (distance > dbTower.towerRange) {
     return { status: 'fail', message: 'attackTowers' };
@@ -152,6 +176,7 @@ export const towerSellHandler = (accountId, data) => {
 
   //선택 타워 제거
   deleteTowers(accountId, data.selectedTowerIndex);
+  deleteCooldown(accountId, data.selectedTowerIndex);
 
   //유저 현재 골드 - 이전 보유 골드 = 타워금액
   if (data.userGold - data.beforeGold !== dbTower.towerCost) {
