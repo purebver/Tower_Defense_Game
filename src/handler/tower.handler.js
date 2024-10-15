@@ -26,7 +26,7 @@ export const towerHandler = (accountId, data) => {
   //골드검증, 공격 쿨다운 검증
   for (let i = 0; i < startTower; i++) {
     setTowers(accountId, data.towerObj);
-    setCooldown(accountId, time);
+    setCooldown(accountId, 0);
   }
   // console.log('tower', data.tower);
 
@@ -70,8 +70,7 @@ export const towerBuyHandler = (accountId, data) => {
   setTowers(accountId, data.towerObj);
 
   //타워 공격 cooldown 검증을 위한 시간 세팅
-  const time = 0;
-  setCooldown(accountId, time);
+  setCooldown(accountId, 0);
 
   useMoney(accountId, towerPrice);
 
