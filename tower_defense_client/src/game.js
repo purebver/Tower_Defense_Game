@@ -354,7 +354,7 @@ function gameLoop() {
   if (selectedTowerIndex !== null) {
     drawTowerSelection(selectedTowerIndex);
   }
-  towers.forEach((tower) => {
+  towers.forEach((tower, index) => {
     tower.draw(ctx);
     tower.updateCooldown();
     monsters.forEach((monster) => {
@@ -370,6 +370,7 @@ function gameLoop() {
             tower,
             monster,
             beforeHp,
+            index,
           });
         }
       }

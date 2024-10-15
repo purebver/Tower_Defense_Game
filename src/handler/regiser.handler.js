@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import { addUser } from '../models/user.model.js';
 import { createBase } from '../models/base.model.js';
 import { prisma } from '../utils/prisma/prisma.client.js';
+import { createCooldown } from '../models/towerCooldown.model.js';
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ const registerHandler = (io) => {
       console.log('user connection');
       //setBase
       createBase(accountId);
+      createCooldown(accountId);
 
       //프리즈마로 tower데이터 받아오기
       const { towers, monsters, stages, bases } = getData();
